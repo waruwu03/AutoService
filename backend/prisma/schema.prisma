@@ -1,0 +1,560 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum UserRole {
+  ADMIN
+  MEKANIK
+  GUDANG
+  PIMPINAN
+}
+
+enum CustomerType {
+  PRIBADI
+  KORPORAT
+}
+
+enum VehicleType {
+  MOBIL
+  MOTOR
+  TRUCK
+  BUS
+  LAINNYA
+}
+
+enum ServiceCategory {
+  SERVIS_BERKALA
+  PERBAIKAN_MESIN
+  PERBAIKAN_TRANSMISI
+  KELISTRIKAN
+  AC_COOLING
+  BODY_REPAIR
+  KAKI_KAKI
+  DETAILING
+  LAINNYA
+}
+
+enum SparepartCategory {
+  OLI_PELUMAS
+  FILTER
+  BRAKE
+  SUSPENSION
+  ENGINE
+  TRANSMISSION
+  ELECTRICAL
+  BODY
+  AC
+  TIRE_WHEEL
+  ACCESSORIES
+  CONSUMABLE
+  LAINNYA
+}
+
+enum WorkOrderStatus {
+  DRAFT
+  PENDING
+  IN_PROGRESS
+  WAITING_PARTS
+  QUALITY_CHECK
+  COMPLETED
+  INVOICED
+  CANCELLED
+}
+
+enum WorkOrderPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum MovementType {
+  PURCHASE
+  SALE
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+  RETURN_SUPPLIER
+  RETURN_CUSTOMER
+  TRANSFER
+  INITIAL
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  PARTIAL
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  TRANSFER
+  DEBIT_CARD
+  CREDIT_CARD
+  QRIS
+  E_WALLET
+  CREDIT
+}
+
+enum ReminderType {
+  ODOMETER
+  TIME_BASED
+  BOTH
+}
+
+enum ReminderStatus {
+  ACTIVE
+  SENT
+  COMPLETED
+  CANCELLED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+}
+
+enum NotificationType {
+  SERVICE_REMINDER
+  WORK_ORDER_UPDATE
+  PAYMENT_RECEIVED
+  LOW_STOCK
+  SYSTEM
+}
+
+// ==================== MODELS ====================
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  password    String
+  name        String
+  phone       String?
+  address     String?
+  role        UserRole  @default(MEKANIK)
+  photoUrl    String?   @map("photo_url")
+  isActive    Boolean   @default(true) @map("is_active")
+  lastLoginAt DateTime? @map("last_login_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  assignedWorkOrders WorkOrder[]        @relation("AssignedMechanic")
+  createdWorkOrders  WorkOrder[]        @relation("CreatedBy")
+  updatedWorkOrders  WorkOrder[]        @relation("UpdatedBy")
+  performedServices  WorkOrderService[]
+  stockMovements     StockMovement[]
+  createdInvoices    Invoice[]
+  receivedPayments   Payment[]
+  auditLogs          AuditLog[]
+  notifications      Notification[]
+  refreshTokens      RefreshToken[]
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
+
+model Customer {
+  id                 String       @id @default(uuid())
+  name               String
+  email              String?
+  phone              String
+  address            String?
+  customerType       CustomerType @default(PRIBADI) @map("customer_type")
+  companyName        String?      @map("company_name")
+  taxId              String?      @map("tax_id")
+  creditLimit        Decimal      @default(0) @map("credit_limit") @db.Decimal(15, 2)
+  outstandingBalance Decimal      @default(0) @map("outstanding_balance") @db.Decimal(15, 2)
+  notes              String?
+  isActive           Boolean      @default(true) @map("is_active")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  vehicles   Vehicle[]
+  workOrders WorkOrder[]
+  invoices   Invoice[]
+
+  @@index([phone])
+  @@index([email])
+  @@index([customerType])
+  @@map("customers")
+}
+
+model Vehicle {
+  id           String      @id @default(uuid())
+  customerId   String      @map("customer_id")
+  licensePlate String      @unique @map("license_plate")
+  brand        String
+  model        String
+  vehicleType  VehicleType @default(MOBIL) @map("vehicle_type")
+  year         Int?
+  vin          String?
+  engineNumber String?     @map("engine_number")
+  color        String?
+  transmission String?
+  fuelType     String?     @map("fuel_type")
+  lastOdometer Int?        @map("last_odometer")
+  notes        String?
+  photoUrl     String?     @map("photo_url")
+  isActive     Boolean     @default(true) @map("is_active")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  customer   Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  workOrders WorkOrder[]
+  reminders  ServiceReminder[]
+
+  @@index([customerId])
+  @@index([licensePlate])
+  @@index([brand, model])
+  @@map("vehicles")
+}
+
+model Service {
+  id                String          @id @default(uuid())
+  code              String          @unique
+  name              String
+  description       String?
+  category          ServiceCategory
+  basePrice         Decimal         @default(0) @map("base_price") @db.Decimal(15, 2)
+  estimatedDuration Int?            @map("estimated_duration")
+  isActive          Boolean         @default(true) @map("is_active")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  workOrderServices WorkOrderService[]
+  reminders         ServiceReminder[]
+
+  @@index([code])
+  @@index([category])
+  @@index([isActive])
+  @@map("services")
+}
+
+model Supplier {
+  id            String   @id @default(uuid())
+  code          String   @unique
+  name          String
+  contactPerson String?  @map("contact_person")
+  phone         String?
+  email         String?
+  address       String?
+  city          String?
+  paymentTerms  Int      @default(30) @map("payment_terms")
+  notes         String?
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  spareparts Sparepart[]
+
+  @@map("suppliers")
+}
+
+model Sparepart {
+  id            String            @id @default(uuid())
+  code          String            @unique
+  name          String
+  description   String?
+  category      SparepartCategory
+  brand         String?
+  unit          String            @default("PCS")
+  buyPrice      Decimal           @default(0) @map("buy_price") @db.Decimal(15, 2)
+  sellPrice     Decimal           @default(0) @map("sell_price") @db.Decimal(15, 2)
+  stockQuantity Int               @default(0) @map("stock_quantity")
+  minStock      Int               @default(5) @map("min_stock")
+  maxStock      Int?              @map("max_stock")
+  location      String?
+  supplierId    String?           @map("supplier_id")
+  photoUrl      String?           @map("photo_url")
+  isActive      Boolean           @default(true) @map("is_active")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  supplier            Supplier?             @relation(fields: [supplierId], references: [id])
+  workOrderSpareparts WorkOrderSparepart[]
+  stockMovements      StockMovement[]
+
+  @@index([code])
+  @@index([category])
+  @@index([brand])
+  @@index([stockQuantity])
+  @@map("spareparts")
+}
+
+model WorkOrder {
+  id                  String            @id @default(uuid())
+  orderNumber         String            @unique @map("order_number")
+  customerId          String            @map("customer_id")
+  vehicleId           String            @map("vehicle_id")
+  status              WorkOrderStatus   @default(DRAFT)
+  priority            WorkOrderPriority @default(NORMAL)
+  assignedMechanicId  String?           @map("assigned_mechanic_id")
+  receivedAt          DateTime          @default(now()) @map("received_at")
+  estimatedCompletion DateTime?         @map("estimated_completion")
+  actualCompletion    DateTime?         @map("actual_completion")
+  odometerIn          Int?              @map("odometer_in")
+  fuelLevel           String?           @map("fuel_level")
+  customerComplaints  String?           @map("customer_complaints")
+  mechanicNotes       String?           @map("mechanic_notes")
+  internalNotes       String?           @map("internal_notes")
+  totalServiceCost    Decimal           @default(0) @map("total_service_cost") @db.Decimal(15, 2)
+  totalPartsCost      Decimal           @default(0) @map("total_parts_cost") @db.Decimal(15, 2)
+  discountPercent     Decimal           @default(0) @map("discount_percent") @db.Decimal(5, 2)
+  discountAmount      Decimal           @default(0) @map("discount_amount") @db.Decimal(15, 2)
+  taxPercent          Decimal           @default(11) @map("tax_percent") @db.Decimal(5, 2)
+  taxAmount           Decimal           @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  grandTotal          Decimal           @default(0) @map("grand_total") @db.Decimal(15, 2)
+  photos              Json              @default("[]")
+  createdById         String?           @map("created_by")
+  updatedById         String?           @map("updated_by")
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  customer         Customer             @relation(fields: [customerId], references: [id])
+  vehicle          Vehicle              @relation(fields: [vehicleId], references: [id])
+  assignedMechanic User?                @relation("AssignedMechanic", fields: [assignedMechanicId], references: [id])
+  createdBy        User?                @relation("CreatedBy", fields: [createdById], references: [id])
+  updatedBy        User?                @relation("UpdatedBy", fields: [updatedById], references: [id])
+  services         WorkOrderService[]
+  spareparts       WorkOrderSparepart[]
+  invoices         Invoice[]
+
+  @@index([orderNumber])
+  @@index([customerId])
+  @@index([vehicleId])
+  @@index([status])
+  @@index([assignedMechanicId])
+  @@index([receivedAt, estimatedCompletion])
+  @@index([createdAt(sort: Desc)])
+  @@map("work_orders")
+}
+
+model WorkOrderService {
+  id              String   @id @default(uuid())
+  workOrderId     String   @map("work_order_id")
+  serviceId       String   @map("service_id")
+  quantity        Int      @default(1)
+  unitPrice       Decimal  @map("unit_price") @db.Decimal(15, 2)
+  discountPercent Decimal  @default(0) @map("discount_percent") @db.Decimal(5, 2)
+  totalPrice      Decimal  @map("total_price") @db.Decimal(15, 2)
+  notes           String?
+  performedById   String?  @map("performed_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  service     Service   @relation(fields: [serviceId], references: [id])
+  performedBy User?     @relation(fields: [performedById], references: [id])
+
+  @@unique([workOrderId, serviceId])
+  @@index([workOrderId])
+  @@index([serviceId])
+  @@map("work_order_services")
+}
+
+model WorkOrderSparepart {
+  id              String   @id @default(uuid())
+  workOrderId     String   @map("work_order_id")
+  sparepartId     String   @map("sparepart_id")
+  quantity        Int      @default(1)
+  unitPrice       Decimal  @map("unit_price") @db.Decimal(15, 2)
+  discountPercent Decimal  @default(0) @map("discount_percent") @db.Decimal(5, 2)
+  totalPrice      Decimal  @map("total_price") @db.Decimal(15, 2)
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  sparepart Sparepart @relation(fields: [sparepartId], references: [id])
+
+  @@index([workOrderId])
+  @@index([sparepartId])
+  @@map("work_order_spareparts")
+}
+
+model StockMovement {
+  id            String       @id @default(uuid())
+  sparepartId   String       @map("sparepart_id")
+  movementType  MovementType @map("movement_type")
+  quantity      Int
+  referenceType String?      @map("reference_type")
+  referenceId   String?      @map("reference_id")
+  stockBefore   Int          @map("stock_before")
+  stockAfter    Int          @map("stock_after")
+  unitCost      Decimal?     @map("unit_cost") @db.Decimal(15, 2)
+  totalCost     Decimal?     @map("total_cost") @db.Decimal(15, 2)
+  notes         String?
+  createdById   String?      @map("created_by")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  // Relations
+  sparepart Sparepart @relation(fields: [sparepartId], references: [id])
+  createdBy User?     @relation(fields: [createdById], references: [id])
+
+  @@index([sparepartId])
+  @@index([movementType])
+  @@index([referenceType, referenceId])
+  @@index([createdAt(sort: Desc)])
+  @@map("stock_movements")
+}
+
+model Invoice {
+  id             String        @id @default(uuid())
+  invoiceNumber  String        @unique @map("invoice_number")
+  workOrderId    String        @map("work_order_id")
+  customerId     String        @map("customer_id")
+  status         InvoiceStatus @default(DRAFT)
+  subtotal       Decimal       @db.Decimal(15, 2)
+  discountAmount Decimal       @default(0) @map("discount_amount") @db.Decimal(15, 2)
+  taxAmount      Decimal       @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  grandTotal     Decimal       @map("grand_total") @db.Decimal(15, 2)
+  amountPaid     Decimal       @default(0) @map("amount_paid") @db.Decimal(15, 2)
+  amountDue      Decimal       @map("amount_due") @db.Decimal(15, 2)
+  invoiceDate    DateTime      @default(now()) @map("invoice_date") @db.Date
+  dueDate        DateTime      @map("due_date") @db.Date
+  paidDate       DateTime?     @map("paid_date") @db.Date
+  notes          String?
+  createdById    String?       @map("created_by")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id])
+  customer  Customer  @relation(fields: [customerId], references: [id])
+  createdBy User?     @relation(fields: [createdById], references: [id])
+  payments  Payment[]
+
+  @@index([invoiceNumber])
+  @@index([workOrderId])
+  @@index([customerId])
+  @@index([status])
+  @@map("invoices")
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  invoiceId       String        @map("invoice_id")
+  amount          Decimal       @db.Decimal(15, 2)
+  paymentMethod   PaymentMethod @map("payment_method")
+  referenceNumber String?       @map("reference_number")
+  paymentDate     DateTime      @default(now()) @map("payment_date")
+  notes           String?
+  receivedById    String?       @map("received_by")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  invoice    Invoice @relation(fields: [invoiceId], references: [id])
+  receivedBy User?   @relation(fields: [receivedById], references: [id])
+
+  @@index([invoiceId])
+  @@index([paymentDate(sort: Desc)])
+  @@index([paymentMethod])
+  @@map("payments")
+}
+
+model ServiceReminder {
+  id                  String         @id @default(uuid())
+  vehicleId           String         @map("vehicle_id")
+  serviceId           String?        @map("service_id")
+  reminderType        ReminderType   @default(BOTH) @map("reminder_type")
+  targetOdometer      Int?           @map("target_odometer")
+  targetDate          DateTime?      @map("target_date") @db.Date
+  intervalKm          Int?           @map("interval_km")
+  intervalDays        Int?           @map("interval_days")
+  status              ReminderStatus @default(ACTIVE)
+  lastServiceDate     DateTime?      @map("last_service_date") @db.Date
+  lastServiceOdometer Int?           @map("last_service_odometer")
+  notificationSentAt  DateTime?      @map("notification_sent_at")
+  notes               String?
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  vehicle Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([vehicleId])
+  @@index([status])
+  @@map("service_reminders")
+}
+
+model AuditLog {
+  id        String      @id @default(uuid())
+  userId    String?     @map("user_id")
+  action    AuditAction
+  tableName String      @map("table_name")
+  recordId  String?     @map("record_id")
+  oldValues Json?       @map("old_values")
+  newValues Json?       @map("new_values")
+  ipAddress String?     @map("ip_address")
+  userAgent String?     @map("user_agent")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([tableName, recordId])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
+
+model Notification {
+  id            String           @id @default(uuid())
+  userId        String?          @map("user_id")
+  type          NotificationType
+  title         String
+  message       String
+  referenceType String?          @map("reference_type")
+  referenceId   String?          @map("reference_id")
+  isRead        Boolean          @default(false) @map("is_read")
+  readAt        DateTime?        @map("read_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
