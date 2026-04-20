@@ -106,7 +106,8 @@ export function AdminSidebar() {
     return pathname.startsWith(url)
   }
 
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string) => {
+    if (!name) return 'U'
     return name
       .split(' ')
       .map((n) => n[0])
@@ -210,11 +211,11 @@ export function AdminSidebar() {
                 <SidebarMenuButton className="w-full">
                   <Avatar className="h-6 w-6">
                     <AvatarFallback className="text-xs">
-                      {user ? getInitials(user.nama) : 'U'}
+                      {user ? getInitials(user.name) : 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-start text-left">
-                    <span className="text-sm font-medium">{user?.nama || 'User'}</span>
+                    <span className="text-sm font-medium">{user?.name || 'User'}</span>
                     <span className="text-xs text-muted-foreground capitalize">
                       {user?.role || 'admin'}
                     </span>

@@ -31,14 +31,15 @@ export interface SelectOption {
 export type UserRole = 'admin' | 'kasir' | 'mekanik' | 'gudang' | 'pimpinan'
 
 export interface User {
-  id: number
-  username: string
-  nama: string
+  id: string | number
+  username?: string
+  name: string
   email: string
   role: UserRole
-  is_active: boolean
-  created_at: string
-  updated_at: string
+  is_active?: boolean
+  created_at?: string
+  updated_at?: string
+  photoUrl?: string | null
 }
 
 export interface AuthTokens {
@@ -49,13 +50,14 @@ export interface AuthTokens {
 }
 
 export interface LoginCredentials {
-  username: string
+  email: string
   password: string
 }
 
 export interface LoginResponse {
   user: User
-  tokens: AuthTokens
+  accessToken: string
+  refreshToken: string
 }
 
 // ==========================================

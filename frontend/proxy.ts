@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server'
 
 // Define role-based route access
 const roleRoutes: Record<string, string[]> = {
-  admin: ['/admin', '/kasir'],
+  admin: ['/admin', '/kasir', '/mekanik', '/gudang', '/pimpinan'],
   kasir: ['/kasir'],
   mekanik: ['/mekanik'],
   gudang: ['/gudang'],
@@ -13,7 +13,7 @@ const roleRoutes: Record<string, string[]> = {
 // Public routes that don't require authentication
 const publicRoutes = ['/', '/login', '/forgot-password']
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Allow public routes
@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
 
   // Check for auth token in cookies
   const token = request.cookies.get('access_token')?.value
-  const userRole = request.cookies.get('user_role')?.value
+  const userRole = request.cookies.get('user_role')?.value?.toLowerCase()
 
   // Redirect to login if no token
   if (!token) {

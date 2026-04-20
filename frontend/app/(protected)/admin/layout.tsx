@@ -1,8 +1,11 @@
-'use client'
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
+import { AdminSidebar } from "@/components/admin/admin-sidebar"
+import { ChatBot } from "@/components/admin/chatbot"
 
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import { AdminSidebar } from '@/components/admin/AdminSidebar'
-import { AdminHeader } from '@/components/admin/AdminHeader'
+export const metadata = {
+  title: "AutoServis - Admin Dashboard",
+  description: "Sistem manajemen bengkel otomotif",
+}
 
 export default function AdminLayout({
   children,
@@ -12,11 +15,9 @@ export default function AdminLayout({
   return (
     <SidebarProvider>
       <AdminSidebar />
-      <SidebarInset>
-        <AdminHeader />
-        <main className="flex-1 p-4 sm:p-6">
-          {children}
-        </main>
+      <SidebarInset className="flex flex-col relative w-full">
+        {children}
+        <ChatBot />
       </SidebarInset>
     </SidebarProvider>
   )

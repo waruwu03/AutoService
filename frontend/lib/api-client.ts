@@ -80,15 +80,15 @@ apiClient.interceptors.response.use(
           refresh_token: refreshToken,
         })
 
-        const { access_token, refresh_token: newRefreshToken } = response.data.data
+        const { accessToken, refreshToken: newRefreshToken } = response.data.data
 
-        setAccessToken(access_token)
+        setAccessToken(accessToken)
         setRefreshToken(newRefreshToken)
-        cookies.set('access_token', access_token)
+        cookies.set('access_token', accessToken)
 
-        processQueue(null, access_token)
+        processQueue(null, accessToken)
 
-        originalRequest.headers.Authorization = `Bearer ${access_token}`
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`
         return apiClient(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError as Error, null)

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/context/AuthContext'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 const geist = Geist({ 
@@ -56,12 +57,19 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="id" className={`${geist.variable} ${geistMono.variable}`}>
-      <body className="font-sans antialiased bg-background">
-        <AuthProvider>
-          {children}
-          <Toaster position="top-right" richColors closeButton />
-        </AuthProvider>
+    <html lang="id" className={`${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <body className="font-sans antialiased bg-background" suppressHydrationWarning>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            {children}
+            <Toaster position="top-right" richColors closeButton />
+          </AuthProvider>
+        </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

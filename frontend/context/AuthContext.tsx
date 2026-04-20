@@ -60,7 +60,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(loggedInUser)
       
       // Redirect based on role
-      const dashboardRoutes: Record<UserRole, string> = {
+      const dashboardRoutes: Record<string, string> = {
         admin: '/admin',
         kasir: '/admin',
         mekanik: '/mekanik',
@@ -68,7 +68,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         pimpinan: '/pimpinan',
       }
       
-      router.push(dashboardRoutes[loggedInUser.role] || '/admin')
+      const role = loggedInUser.role.toLowerCase()
+      router.push(dashboardRoutes[role] || '/admin')
     } finally {
       setIsLoading(false)
     }

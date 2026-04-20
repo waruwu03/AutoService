@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { getErrorMessage } from '@/lib/api-client'
 
 const loginSchema = z.object({
-  username: z.string().min(1, 'Username wajib diisi'),
+  email: z.string().email('Format email tidak valid'),
   password: z.string().min(1, 'Password wajib diisi'),
 })
 
@@ -69,16 +69,16 @@ function LoginForm() {
 
           <FieldGroup>
             <Field>
-              <FieldLabel htmlFor="username">Username</FieldLabel>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
               <Input
-                id="username"
-                type="text"
-                placeholder="Masukkan username"
-                autoComplete="username"
-                {...register('username')}
+                id="email"
+                type="email"
+                placeholder="Masukkan email"
+                autoComplete="email"
+                {...register('email')}
               />
-              {errors.username && (
-                <FieldError>{errors.username.message}</FieldError>
+              {errors.email && (
+                <FieldError>{errors.email.message}</FieldError>
               )}
             </Field>
 
@@ -125,7 +125,7 @@ function LoginForm() {
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>Demo credentials:</p>
-          <p className="font-mono">admin / admin123</p>
+          <p className="font-mono text-xs">admin@autoservis.com / admin123</p>
         </div>
       </CardContent>
     </Card>

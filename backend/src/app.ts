@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -59,6 +62,16 @@ app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Root route
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).json({
+    message: 'Welcome to AutoServis API',
+    version: '1.0.0',
+    docs: '/api-docs',
+    health: '/health'
+  });
+});
+
 // Routes
 app.use(process.env.API_PREFIX || '/api/v1', routes);
 
@@ -72,7 +85,8 @@ const startServer = async () => {
     try {
       await ensureBucket();
     } catch (s3Error) {
-      console.warn('⚠️ Could not connect to S3/MinIO. File uploads may fail:', s3Error.message);
+      const message = s3Error instanceof Error ? s3Error.message : String(s3Error);
+      console.warn('⚠️ Could not connect to S3/MinIO. File uploads may fail:', message);
     }
     
     app.listen(port, () => {

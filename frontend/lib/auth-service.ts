@@ -20,17 +20,17 @@ export const authService = {
   async login(credentials: LoginCredentials): Promise<User> {
     const response = await api.post<ApiResponse<LoginResponse>>('/auth/login', credentials)
     
-    const { user, tokens } = response.data
+    const { user, accessToken, refreshToken } = response.data
 
     // Store tokens
-    setAccessToken(tokens.access_token)
-    setRefreshToken(tokens.refresh_token)
+    setAccessToken(accessToken)
+    setRefreshToken(refreshToken)
     setStorageItem(STORAGE_KEYS.USER, user)
     setStorageItem(STORAGE_KEYS.USER_ROLE, user.role)
 
-    // Set cookies for middleware
-    cookies.set('access_token', tokens.access_token)
-    cookies.set('user_role', user.role)
+    // Set cookies for middleware (middleware expects snake_case)
+    cookies.set('access_token', accessToken)
+    cookies.set('user_role', user.role.toLowerCase())
 
     return user
   },
@@ -66,7 +66,7 @@ export const authService = {
     
     setStorageItem(STORAGE_KEYS.USER, user)
     setStorageItem(STORAGE_KEYS.USER_ROLE, user.role)
-    cookies.set('user_role', user.role)
+    cookies.set('user_role', user.role.toLowerCase())
     
     return user
   },

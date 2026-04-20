@@ -20,6 +20,51 @@ async function main() {
     },
   });
   console.log('✅ Admin user created');
+  // 1.1 Create Pimpinan User
+  const pimpinanPassword = await bcrypt.hash('pimpinan123', 12);
+  await prisma.user.upsert({
+    where: { email: 'pimpinan@autoservis.com' },
+    update: {},
+    create: {
+      email: 'pimpinan@autoservis.com',
+      password: pimpinanPassword,
+      name: 'Bapak Pimpinan',
+      role: UserRole.PIMPINAN,
+      isActive: true,
+    },
+  });
+  console.log('✅ Pimpinan user created');
+
+  // 1.2 Create Mekanik User
+  const mekanikPassword = await bcrypt.hash('mekanik123', 12);
+  await prisma.user.upsert({
+    where: { email: 'mekanik@autoservis.com' },
+    update: {},
+    create: {
+      email: 'mekanik@autoservis.com',
+      password: mekanikPassword,
+      name: 'Budi Mekanik',
+      role: UserRole.MEKANIK,
+      isActive: true,
+    },
+  });
+  console.log('✅ Mekanik user created');
+
+  // 1.3 Create Gudang User
+  const gudangPassword = await bcrypt.hash('gudang123', 12);
+  await prisma.user.upsert({
+    where: { email: 'gudang@autoservis.com' },
+    update: {},
+    create: {
+      email: 'gudang@autoservis.com',
+      password: gudangPassword,
+      name: 'Siti Gudang',
+      role: UserRole.GUDANG,
+      isActive: true,
+    },
+  });
+  console.log('✅ Gudang user created');
+
 
   // 2. Create Services
   const servicesData = [
