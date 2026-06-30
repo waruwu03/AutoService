@@ -18,11 +18,13 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
 
     // Ignore static files and image optimization
+    const ext = pathname.split('.').pop()?.toLowerCase()
+    const staticExts = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'css', 'js']
+    
     if (
       pathname.startsWith('/_next') ||
       pathname.startsWith('/static') ||
-      pathname === '/favicon.ico' ||
-      pathname.match(/\.(png|jpg|jpeg|gif|svg|webp|ico)$/)
+      (ext && staticExts.includes(ext))
     ) {
       return NextResponse.next()
     }
