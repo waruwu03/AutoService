@@ -10,7 +10,6 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import routes from './routes';
 import { errorMiddleware } from './middleware/error.middleware';
 import { apiLimiter } from './middleware/rate-limit.middleware';
-import { ensureBucket } from './config/s3.config';
 import path from 'path';
 
 const app: Express = express();
@@ -101,14 +100,6 @@ app.use(errorMiddleware);
 // Initialize application
 const startServer = async () => {
   try {
-    // Ensure S3 bucket exists
-    try {
-      await ensureBucket();
-    } catch (s3Error) {
-      const message = s3Error instanceof Error ? s3Error.message : String(s3Error);
-      console.warn('⚠️ Could not connect to S3/MinIO. File uploads may fail:', message);
-    }
-    
     app.listen(port, () => {
       console.log(`
 🚀 Server ready at: http://localhost:${port}
