@@ -13,7 +13,7 @@ const roleRoutes: Record<string, string[]> = {
 // Public routes that don't require authentication
 const publicRoutes = ['/', '/login', '/forgot-password']
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl
 
