@@ -11,19 +11,27 @@ export class UploadService {
         },
         (error, result) => {
           if (error) return reject(error);
-          if (result) return resolve(result.public_id);
+          if (result) return resolve(result.secure_url); // Mengembalikan URL utuh
           reject(new Error('Unknown error during upload to Cloudinary'));
         }
       );
       
-      // We pass the buffer from multer directly to Cloudinary
       uploadStream.end(file.buffer);
     });
   }
 
   async deleteFile(fileKey: string): Promise<void> {
     try {
-      await cloudinary.uploader.destroy(fileKey);
+      let publicId = fileKey;
+      // Jika fileKey berupa URL utuh Cloudinary, ekstrak public_id-nya
+      if (fileKey.startsWith('http')) {
+        // Contoh: https://res.cloudinary.com/demo/image/upload/v1612345/folder/id.jpg
+        const matches = fileKey.match(/\/v\d+\/(.+)\.[a-zA-Z]+$/);
+        if (matches && matches[1]) {
+          publicId = matches[1];
+        }
+      }
+      await cloudinary.uploader.destroy(publicId);
     } catch (error) {
       console.error('Failed to delete from Cloudinary', error);
     }
@@ -31,11 +39,11 @@ export class UploadService {
 
   async getPresignedUrl(fileKey: string): Promise<string> {
     try {
-      // Cloudinary generates public secure URLs directly
+      if (fileKey.startsWith('http')) return fileKey;
       return cloudinary.url(fileKey, { secure: true });
     } catch (error) {
       console.warn('⚠️ Failed to get URL from Cloudinary', error);
-      return `/api/v1/uploads/${fileKey}`; // Fallback (should ideally not happen)
+      return `/api/v1/uploads/${fileKey}`;
     }
   }
 }
