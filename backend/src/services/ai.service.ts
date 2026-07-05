@@ -4,6 +4,64 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { prisma } from "../config/database.config";
 
 export class AIService {
+  private extractKeywords(text: string): string[] {
+    const stopwords = new Set([
+      'yang', 'di', 'ke', 'dari', 'pada', 'dalam', 'untuk', 'dengan', 
+      'dan', 'atau', 'ini', 'itu', 'juga', 'sudah', 'saya', 'dia', 
+      'mereka', 'kita', 'kami', 'kamu', 'ada', 'adalah', 'akan', 
+      'bisa', 'dapat', 'tidak', 'bukan', 'belum', 'apa', 'bagaimana',
+      'kenapa', 'mengapa', 'kapan', 'siapa', 'dimana', 'tolong', 'bantu',
+      'cara', 'perbaiki', 'mengatasi'
+    ]);
+    
+    // Hapus tanda baca dan ubah ke lowercase
+    const cleaned = text.toLowerCase().replace(/[^\w\s]/g, '');
+    const words = cleaned.split(/\s+/);
+    
+    // Filter kata yang bukan stopword dan panjang > 2
+    return words.filter(word => word.length > 2 && !stopwords.has(word));
+  }
+
+  private async searchRelevantHistory(keywords: string[]) {
+    if (keywords.length === 0) return [];
+
+    try {
+      // Cari WorkOrder yang memiliki keluhan (customerComplaints) atau catatan mekanik (mechanicNotes)
+      // yang mengandung salah satu kata kunci. Kita gunakan contains query dari Prisma.
+      const orConditions = keywords.flatMap(kw => [
+        { customerComplaints: { contains: kw } },
+        { mechanicNotes: { contains: kw } }
+      ]);
+
+      const history = await prisma.workOrder.findMany({
+        where: {
+          status: 'COMPLETED',
+          OR: orConditions
+        },
+        take: 5,
+        orderBy: {
+          updatedAt: 'desc'
+        },
+        include: {
+          vehicle: {
+            select: { brand: true, model: true }
+          },
+          services: {
+            include: { service: true }
+          },
+          spareparts: {
+            include: { sparepart: true }
+          }
+        }
+      });
+
+      return history;
+    } catch (error) {
+      console.error("Error searching history:", error);
+      return [];
+    }
+  }
+
   async chat(message: string, userId: string) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || apiKey === "your_gemini_api_key_here") {
@@ -13,7 +71,7 @@ export class AIService {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
 
-      // Fallback context if database query fails
+      // 1. Dapatkan statistik dashboard
       let stats = { todayWorkOrders: 0, activeWorkOrders: 0, lowStockCount: 0 };
       try {
         stats = await this.getDashboardContext();
@@ -21,13 +79,38 @@ export class AIService {
         console.error("⚠️ Dashboard context failed:", dbError);
       }
 
-      const systemInstruction = `Anda adalah AutoService AI Assistant untuk bengkel "AutoServis".
-Konteks Bengkel saat ini:
+      // 2. Ekstrak Keyword & Cari Riwayat SPK (RAG)
+      const keywords = this.extractKeywords(message);
+      const history = await this.searchRelevantHistory(keywords);
+
+      let historyContext = "";
+      if (history.length > 0) {
+        historyContext = "\n\nRIWAYAT PERBAIKAN SEBELUMNYA (Konteks RAG):\n";
+        history.forEach((wo, index) => {
+          const vehicle = `${wo.vehicle?.brand} ${wo.vehicle?.model}`;
+          const services = wo.services.map(s => s.service.name).join(", ") || "-";
+          const spareparts = wo.spareparts.map(sp => sp.sparepart.name).join(", ") || "-";
+          
+          historyContext += `${index + 1}. Kendaraan: ${vehicle}
+   Keluhan: ${wo.customerComplaints || '-'}
+   Tindakan Mekanik: ${wo.mechanicNotes || '-'}
+   Jasa: ${services}
+   Sparepart Diganti: ${spareparts}\n\n`;
+        });
+      }
+
+      // 3. Susun System Instruction
+      const systemInstruction = `Anda adalah AutoService AI Assistant untuk bengkel "AutoServis". Tugas Anda adalah membantu admin, mekanik, atau pimpinan bengkel dalam menjawab pertanyaan operasional dan teknis.
+
+Konteks Bengkel Saat Ini:
 - Order Hari Ini: ${stats.todayWorkOrders}
 - Pekerjaan Aktif: ${stats.activeWorkOrders}
-- Stok Kritis: ${stats.lowStockCount} item
+- Stok Kritis: ${stats.lowStockCount} item${historyContext}
 
-Berikan jawaban singkat, profesional, dan dalam Bahasa Indonesia.`;
+Aturan Menjawab:
+1. Berikan jawaban singkat, akurat, profesional, dan dalam Bahasa Indonesia.
+2. Jika ada riwayat perbaikan yang relevan pada bagian "RIWAYAT PERBAIKAN SEBELUMNYA", gunakan data tersebut untuk memberikan rekomendasi spesifik (misal: "Berdasarkan riwayat bengkel ini, keluhan X sering diselesaikan dengan mengganti part Y").
+3. Jika pertanyaan tidak relevan dengan otomotif atau sistem bengkel, arahkan kembali ke topik otomotif secara sopan.`;
 
       const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash",

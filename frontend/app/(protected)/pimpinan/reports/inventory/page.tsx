@@ -41,7 +41,8 @@ import {
 import { ChartContainer } from "@/components/ui/chart"
 import { Progress } from "@/components/ui/progress"
 import { PimpinanHeader } from "@/components/pimpinan/pimpinan-header"
-import { apiClient } from "@/lib/api-client"
+import useSWR from "swr"
+import { apiClient, fetcher } from "@/lib/api-client"
 import { toast } from "sonner"
 import { useState } from "react"
 import {
@@ -51,42 +52,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-const inventoryItems = [
-  { id: 1, name: "Oli Mesin 10W-40", sku: "OIL-10W40-001", category: "Oli", stock: 45, minStock: 20, maxStock: 100, unit: "Liter", price: 85000, value: 3825000, status: "normal" },
-  { id: 2, name: "Filter Oli Universal", sku: "FIL-OIL-001", category: "Filter", stock: 32, minStock: 15, maxStock: 60, unit: "Pcs", price: 45000, value: 1440000, status: "normal" },
-  { id: 3, name: "Kampas Rem Depan", sku: "BRK-PAD-001", category: "Rem", stock: 8, minStock: 10, maxStock: 40, unit: "Set", price: 250000, value: 2000000, status: "low" },
-  { id: 4, name: "Busi Iridium", sku: "SPK-IRD-001", category: "Kelistrikan", stock: 24, minStock: 20, maxStock: 80, unit: "Pcs", price: 120000, value: 2880000, status: "normal" },
-  { id: 5, name: "Freon AC R134a", sku: "AC-FRN-001", category: "AC", stock: 3, minStock: 5, maxStock: 20, unit: "Kaleng", price: 150000, value: 450000, status: "critical" },
-  { id: 6, name: "Minyak Rem DOT 4", sku: "BRK-FLU-001", category: "Rem", stock: 18, minStock: 10, maxStock: 30, unit: "Botol", price: 65000, value: 1170000, status: "normal" },
-  { id: 7, name: "V-Belt Set", sku: "BLT-SET-001", category: "Mesin", stock: 6, minStock: 8, maxStock: 25, unit: "Set", price: 350000, value: 2100000, status: "low" },
-  { id: 8, name: "Air Radiator Coolant", sku: "RAD-COL-001", category: "Pendingin", stock: 25, minStock: 15, maxStock: 50, unit: "Liter", price: 45000, value: 1125000, status: "normal" },
-]
-
-const stockMovement = [
-  { month: "Jun", masuk: 150, keluar: 130 },
-  { month: "Jul", masuk: 180, keluar: 160 },
-  { month: "Aug", masuk: 165, keluar: 155 },
-  { month: "Sep", masuk: 190, keluar: 170 },
-  { month: "Okt", masuk: 175, keluar: 165 },
-  { month: "Nov", masuk: 145, keluar: 140 },
-]
-
-const categoryDistribution = [
-  { name: "Oli & Pelumas", value: 35, color: "#3b82f6" },
-  { name: "Filter", value: 20, color: "#10b981" },
-  { name: "Rem", value: 18, color: "#f59e0b" },
-  { name: "Kelistrikan", value: 15, color: "#8b5cf6" },
-  { name: "Lainnya", value: 12, color: "#6b7280" },
-]
-
-const recentTransactions = [
-  { date: "2024-11-15", item: "Oli Mesin 10W-40", type: "out", quantity: 5, spk: "SPK-2024-0145", by: "Andi Susanto" },
-  { date: "2024-11-15", item: "Filter Oli Universal", type: "out", quantity: 2, spk: "SPK-2024-0145", by: "Andi Susanto" },
-  { date: "2024-11-14", item: "Oli Mesin 10W-40", type: "in", quantity: 50, spk: "PO-2024-089", by: "Admin Gudang" },
-  { date: "2024-11-14", item: "Kampas Rem Depan", type: "out", quantity: 2, spk: "SPK-2024-0143", by: "Cahyo Wibowo" },
-  { date: "2024-11-13", item: "Busi Iridium", type: "out", quantity: 4, spk: "SPK-2024-0142", by: "Beni Kurniawan" },
-]
-
 function formatRupiah(amount: number): string {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)
 }
@@ -94,6 +59,53 @@ function formatRupiah(amount: number): string {
 export default function InventoryReportPage() {
   const [isExporting, setIsExporting] = useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
+
+  const { data: invRaw, isLoading: invLoading } = useSWR('/reports/inventory', fetcher)
+  const { data: movRaw, isLoading: movLoading } = useSWR('/inventory/stock-movements?limit=5', fetcher)
+
+  const isLoading = invLoading || movLoading
+
+  const inventoryItems = invRaw?.data?.items?.map((i: any) => ({
+    id: i.id,
+    name: i.name,
+    sku: i.code,
+    category: i.category,
+    stock: i.stockQuantity,
+    minStock: i.minStock,
+    maxStock: i.maxStock || (i.minStock * 3),
+    unit: i.unit,
+    price: Number(i.sellPrice),
+    value: Number(i.sellPrice) * i.stockQuantity,
+    status: i.stockQuantity <= i.minStock * 0.5 ? "critical" : i.stockQuantity <= i.minStock ? "low" : "normal"
+  })) || []
+
+  const catMap: Record<string, number> = {}
+  inventoryItems.forEach((i: any) => { catMap[i.category] = (catMap[i.category] || 0) + i.value })
+  const totalInvValue = inventoryItems.reduce((s: number, x: any) => s + x.value, 0)
+  const categoryDistribution = Object.entries(catMap).map(([name, value], idx) => ({
+    name: name.replace(/_/g, ' '), 
+    value: totalInvValue > 0 ? Math.round((value / totalInvValue) * 100) : 0, 
+    color: ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#6b7280", "#ec4899", "#14b8a6"][idx % 7]
+  })).sort((a, b) => b.value - a.value).slice(0, 5)
+
+  const recentTransactions = Array.isArray(movRaw?.data?.data) ? movRaw.data.data.map((m: any) => ({
+    id: m.id,
+    date: new Date(m.createdAt).toLocaleDateString('id-ID'),
+    item: m.sparepart?.name || '-',
+    type: (m.movementType.includes('OUT') || m.movementType.includes('SALE') || m.movementType.includes('RETURN_SUPPLIER')) ? 'out' : 'in',
+    quantity: m.quantity,
+    spk: m.referenceId || m.referenceType || '-',
+    by: m.createdBy?.name || 'Sistem'
+  })) : []
+
+  const stockMovement = [
+    { month: "Jun", masuk: 150, keluar: 130 },
+    { month: "Jul", masuk: 180, keluar: 160 },
+    { month: "Aug", masuk: 165, keluar: 155 },
+    { month: "Sep", masuk: 190, keluar: 170 },
+    { month: "Okt", masuk: 175, keluar: 165 },
+    { month: "Nov", masuk: 145, keluar: 140 },
+  ]
 
   const handleExport = async (format: 'pdf' | 'excel') => {
     setIsExporting(true)
@@ -118,10 +130,11 @@ export default function InventoryReportPage() {
       setIsExporting(false)
     }
   }
-  const filteredItems = inventoryItems.filter((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.sku.toLowerCase().includes(searchQuery.toLowerCase()))
-  const totalValue = inventoryItems.reduce((sum, item) => sum + item.value, 0)
-  const lowStockCount = inventoryItems.filter((item) => item.status === "low").length
-  const criticalStockCount = inventoryItems.filter((item) => item.status === "critical").length
+
+  const filteredItems = inventoryItems.filter((item: any) => item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.sku.toLowerCase().includes(searchQuery.toLowerCase()))
+  const totalValue = totalInvValue
+  const lowStockCount = inventoryItems.filter((item: any) => item.status === "low").length
+  const criticalStockCount = inventoryItems.filter((item: any) => item.status === "critical").length
 
   return (
     <>
@@ -244,7 +257,11 @@ export default function InventoryReportPage() {
                 <TableRow><TableHead>Item</TableHead><TableHead>SKU</TableHead><TableHead>Kategori</TableHead><TableHead className="text-right">Stok</TableHead><TableHead>Level</TableHead><TableHead className="text-right">Harga</TableHead><TableHead className="text-right">Nilai</TableHead><TableHead>Status</TableHead></TableRow>
               </TableHeader>
               <TableBody>
-                {filteredItems.map((item) => (
+                {isLoading ? (
+                  <TableRow><TableCell colSpan={8} className="text-center py-10"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                ) : filteredItems.length === 0 ? (
+                  <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">Tidak ada item ditemukan</TableCell></TableRow>
+                ) : filteredItems.map((item: any) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium">{item.name}</TableCell>
                     <TableCell className="text-muted-foreground">{item.sku}</TableCell>
@@ -252,8 +269,8 @@ export default function InventoryReportPage() {
                     <TableCell className="text-right">{item.stock} {item.unit}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Progress value={(item.stock / item.maxStock) * 100} className={`h-2 w-16 ${item.status === "critical" ? "[&>div]:bg-destructive" : item.status === "low" ? "[&>div]:bg-amber-500" : ""}`} />
-                        <span className="text-xs text-muted-foreground">{Math.round((item.stock / item.maxStock) * 100)}%</span>
+                        <Progress value={Math.min((item.stock / item.maxStock) * 100, 100)} className={`h-2 w-16 ${item.status === "critical" ? "[&>div]:bg-destructive" : item.status === "low" ? "[&>div]:bg-amber-500" : ""}`} />
+                        <span className="text-xs text-muted-foreground">{Math.round(Math.min((item.stock / item.maxStock) * 100, 100))}%</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">{formatRupiah(item.price)}</TableCell>
@@ -277,8 +294,12 @@ export default function InventoryReportPage() {
             <Table>
               <TableHeader><TableRow><TableHead>Tanggal</TableHead><TableHead>Item</TableHead><TableHead>Tipe</TableHead><TableHead className="text-right">Qty</TableHead><TableHead>Referensi</TableHead><TableHead>Oleh</TableHead></TableRow></TableHeader>
               <TableBody>
-                {recentTransactions.map((tx, index) => (
-                  <TableRow key={index}>
+                {isLoading ? (
+                  <TableRow><TableCell colSpan={6} className="text-center py-10"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                ) : recentTransactions.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">Belum ada riwayat transaksi</TableCell></TableRow>
+                ) : recentTransactions.map((tx: any, index: number) => (
+                  <TableRow key={tx.id || index}>
                     <TableCell>{tx.date}</TableCell>
                     <TableCell className="font-medium">{tx.item}</TableCell>
                     <TableCell>
