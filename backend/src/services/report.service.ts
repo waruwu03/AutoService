@@ -3,23 +3,29 @@
 import { prisma } from '../config/database.config';
 
 export class ReportService {
-  async getDashboardSummary() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  async getDashboardSummary(startDate: Date, endDate: Date) {
+    // 6 months ago for chart data
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
 
     const [
-      todayWorkOrders,
+      completedOrders,
       activeWorkOrders,
-      monthlyRevenue,
+      totalRevenue,
       totalCustomers,
       lowStockCount,
       pendingInvoices,
+      sixMonthsPayments,
+      serviceBreakdownRaw,
     ] = await Promise.all([
-      // Today's work orders
+      // Completed work orders in the period
       prisma.workOrder.count({
-        where: { createdAt: { gte: today } },
+        where: { 
+          status: { in: ['COMPLETED', 'INVOICED'] },
+          createdAt: { gte: startDate, lte: endDate }
+        },
       }),
 
       // Active work orders
@@ -29,10 +35,10 @@ export class ReportService {
         },
       }),
 
-      // Monthly revenue
+      // Revenue in the period
       prisma.payment.aggregate({
         where: {
-          paymentDate: { gte: startOfMonth },
+          paymentDate: { gte: startDate, lte: endDate },
         },
         _sum: { amount: true },
       }),
@@ -52,15 +58,79 @@ export class ReportService {
       prisma.invoice.count({
         where: { status: { in: ['DRAFT', 'SENT', 'PARTIAL'] } },
       }),
+
+      // For Monthly Revenue Stats (last 6 months)
+      prisma.payment.findMany({
+        where: {
+          paymentDate: { gte: sixMonthsAgo }
+        },
+        select: {
+          paymentDate: true,
+          amount: true
+        }
+      }),
+
+      // For Service Breakdown
+      prisma.workOrderService.findMany({
+        where: {
+          createdAt: { gte: startDate, lte: endDate }
+        },
+        include: {
+          service: true
+        }
+      })
     ]);
 
+    // Process Service Breakdown
+    const serviceCategories: Record<string, number> = {};
+    let totalServices = 0;
+    serviceBreakdownRaw.forEach(item => {
+      const cat = item.service.category.replace(/_/g, ' ');
+      serviceCategories[cat] = (serviceCategories[cat] || 0) + 1;
+      totalServices++;
+    });
+
+    const serviceBreakdown = Object.entries(serviceCategories)
+      .map(([name, count]) => ({
+        name,
+        count,
+        percentage: totalServices > 0 ? Math.round((count / totalServices) * 100) : 0
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5); // top 5
+
+    // Process Monthly Revenue Stats (Bar Chart)
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+    const monthlyStatsMap: Record<string, number> = {};
+    
+    sixMonthsPayments.forEach(p => {
+      const m = `${p.paymentDate.getFullYear()}-${p.paymentDate.getMonth()}`;
+      monthlyStatsMap[m] = (monthlyStatsMap[m] || 0) + Number(p.amount);
+    });
+
+    const monthlyRevenueStats = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const mKey = `${d.getFullYear()}-${d.getMonth()}`;
+      
+      monthlyRevenueStats.push({
+        month: monthNames[d.getMonth()],
+        target: 50, // default dummy target in millions
+        realisasi: Number(((monthlyStatsMap[mKey] || 0) / 1000000).toFixed(1)) // Convert to millions
+      });
+    }
+
     return {
-      todayWorkOrders,
+      completedOrders,
       activeWorkOrders,
-      monthlyRevenue: monthlyRevenue._sum.amount || 0,
+      totalRevenue: totalRevenue._sum.amount || 0,
       totalCustomers,
       lowStockCount: Number(lowStockCount[0]?.count || 0),
       pendingInvoices,
+      monthlyRevenueStats,
+      serviceBreakdown,
+      avgRating: 4.8 // default placeholder as it doesn't exist in DB
     };
   }
 

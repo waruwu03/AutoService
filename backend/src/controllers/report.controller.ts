@@ -9,7 +9,15 @@ import ExcelJS from 'exceljs';
 export class ReportController {
   async getDashboard(req: Request, res: Response, next: NextFunction) {
     try {
-      const summary = await reportService.getDashboardSummary();
+      const startDate = req.query.startDate
+        ? new Date(req.query.startDate as string)
+        : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      
+      const endDate = req.query.endDate
+        ? new Date(req.query.endDate as string)
+        : new Date();
+        
+      const summary = await reportService.getDashboardSummary(startDate, endDate);
       sendSuccess(res, summary);
     } catch (error) {
       next(error);
@@ -162,15 +170,15 @@ export class ReportController {
             break;
           }
           default: {
-            const dash = await reportService.getDashboardSummary();
+            const dash = await reportService.getDashboardSummary(startOfMonth, now);
             sheet.columns = [
               { header: 'Metrik', key: 'metric', width: 30 },
               { header: 'Nilai', key: 'value', width: 20 },
             ];
             sheet.addRows([
-              { metric: 'SPK Hari Ini', value: dash.todayWorkOrders },
+              { metric: 'SPK Selesai', value: dash.completedOrders },
               { metric: 'SPK Aktif', value: dash.activeWorkOrders },
-              { metric: 'Pendapatan Bulan Ini', value: dash.monthlyRevenue },
+              { metric: 'Pendapatan Periode Ini', value: dash.totalRevenue },
               { metric: 'Total Pelanggan', value: dash.totalCustomers },
               { metric: 'Stok Menipis', value: dash.lowStockCount },
             ]);
@@ -207,7 +215,7 @@ export class ReportController {
         switch (type) {
           case 'revenue': {
             const report = await reportService.getRevenueReport(startOfMonth, now);
-            const dash = await reportService.getDashboardSummary();
+            const dash = await reportService.getDashboardSummary(startOfMonth, now);
             
             // Summary Cards (simulated in PDF)
             doc.fontSize(12).font('Helvetica-Bold').text('RINGKASAN PENDAPATAN');
@@ -254,12 +262,12 @@ export class ReportController {
             break;
           }
           default: {
-            const dash = await reportService.getDashboardSummary();
+            const dash = await reportService.getDashboardSummary(startOfMonth, now);
             doc.fontSize(12).font('Helvetica-Bold').text('RINGKASAN DASHBOARD');
             doc.moveDown();
             doc.fontSize(10).font('Helvetica').text(`SPK Aktif: ${dash.activeWorkOrders}`);
-            doc.text(`SPK Hari Ini: ${dash.todayWorkOrders}`);
-            doc.text(`Pendapatan Bulan Ini: Rp ${Number(dash.monthlyRevenue).toLocaleString('id-ID')}`);
+            doc.text(`SPK Selesai: ${dash.completedOrders}`);
+            doc.text(`Pendapatan Periode Ini: Rp ${Number(dash.totalRevenue).toLocaleString('id-ID')}`);
             doc.text(`Invoice Pending: ${dash.pendingInvoices}`);
           }
         }
