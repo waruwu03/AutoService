@@ -10,6 +10,7 @@ import {
   sendSuccess,
   sendCreated,
   sendNotFound,
+  sendError,
 } from '../utils/response.util';
 import { parsePagination, createPaginationMeta } from '../utils/pagination.util';
 
@@ -91,6 +92,21 @@ export class CustomerController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const data = createCustomerSchema.parse(req.body);
+      
+      // Check for duplicates
+      const existing = await prisma.customer.findFirst({
+        where: {
+          OR: [
+            { phone: data.phone },
+            ...(data.email ? [{ email: data.email }] : [])
+          ]
+        }
+      });
+
+      if (existing) {
+        return sendError(res, 'Pelanggan dengan nomor HP atau Email ini sudah terdaftar', 409);
+      }
+
       const customer = await prisma.customer.create({ data });
       sendCreated(res, customer);
     } catch (error) {
@@ -100,9 +116,27 @@ export class CustomerController {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
+      const id = req.params.id as string;
       const data = updateCustomerSchema.parse(req.body);
+
+      if (data.phone || data.email) {
+        const existing = await prisma.customer.findFirst({
+          where: {
+            id: { not: id },
+            OR: [
+              ...(data.phone ? [{ phone: data.phone }] : []),
+              ...(data.email ? [{ email: data.email }] : [])
+            ]
+          }
+        });
+
+        if (existing) {
+          return sendError(res, 'Nomor HP atau Email ini sudah terdaftar pada pelanggan lain', 409);
+        }
+      }
+
       const customer = await prisma.customer.update({
-        where: { id: (req.params.id as string) },
+        where: { id },
         data,
       });
       sendSuccess(res, customer, 'Customer updated');

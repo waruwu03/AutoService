@@ -38,8 +38,15 @@ const playNotificationSound = () => {
     }
 
     // High pitch beep
-    playBeep(880, 0, 0.2) // A5
-    playBeep(1046.50, 0.15, 0.3) // C6
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().then(() => {
+        playBeep(880, 0, 0.2) // A5
+        playBeep(1046.50, 0.15, 0.3) // C6
+      }).catch(e => console.log('Cannot resume audio context', e))
+    } else {
+      playBeep(880, 0, 0.2) // A5
+      playBeep(1046.50, 0.15, 0.3) // C6
+    }
   } catch (err) {
     console.log('Audio playback failed', err)
   }
@@ -61,7 +68,16 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     }
 
     const token = getAccessToken()
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'
+    
+    // Ensure we only use the origin (e.g. http://localhost:3002) for Socket.io, not /api/v1
+    let backendUrl = 'http://localhost:5000'
+    try {
+      if (process.env.NEXT_PUBLIC_API_URL) {
+        backendUrl = new URL(process.env.NEXT_PUBLIC_API_URL).origin
+      }
+    } catch (e) {
+      console.warn('Invalid NEXT_PUBLIC_API_URL')
+    }
 
     const socketInstance = io(backendUrl, {
       auth: {

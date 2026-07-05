@@ -62,7 +62,7 @@ export default function MekanikDashboard() {
   // Format date for API (YYYY-MM-DD)
   const dateStr = format(selectedDate, 'yyyy-MM-dd')
 
-  const { data: woData, isLoading } = useSWR(
+  const { data: woData, isLoading, mutate } = useSWR(
     user ? `/work-orders?assignedMechanicId=${user.id}&date=${dateStr}&limit=10&sortBy=createdAt&sortOrder=desc` : null, 
     fetcher
   )
@@ -77,40 +77,48 @@ export default function MekanikDashboard() {
 
   useEffect(() => {
     setGreeting(getGreeting())
-  }, [])
+
+    // Auto-refresh when new SPK assigned
+    const handleNewNotification = () => {
+      mutate()
+    }
+    window.addEventListener('new-notification', handleNewNotification)
+    return () => window.removeEventListener('new-notification', handleNewNotification)
+  }, [mutate])
 
   return (
     <div className="space-y-5">
       {/* Greeting Card */}
       <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-primary/10 rounded-[2rem] blur-lg opacity-50 group-hover:opacity-100 transition duration-1000"></div>
-        <Card className="bg-gradient-to-br from-primary to-primary/80 border-0 overflow-hidden relative rounded-[2rem] shadow-xl shadow-primary/20 transition-all duration-500">
+        {/* Glow effect behind card */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 via-primary/10 to-primary/30 rounded-[2rem] blur-xl opacity-50 group-hover:opacity-100 transition duration-1000"></div>
+        <Card className="bg-[#0A0A0B] border border-white/5 overflow-hidden relative rounded-[2rem] shadow-2xl transition-all duration-500">
           {/* Animated Background Elements */}
-          <div className="absolute -top-12 -right-4 p-8 opacity-[0.15] group-hover:opacity-[0.25] transition-all duration-700 group-hover:rotate-12 group-hover:scale-110 transform-gpu mix-blend-overlay pointer-events-none">
-            <Wrench className="h-48 w-48 text-white" />
+          <div className="absolute -top-12 -right-4 p-8 opacity-[0.05] group-hover:opacity-[0.15] transition-all duration-700 group-hover:rotate-12 group-hover:scale-110 transform-gpu mix-blend-screen pointer-events-none">
+            <Wrench className="h-48 w-48 text-primary" />
           </div>
           
           {/* Glass Gradients */}
-          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.05] mix-blend-overlay pointer-events-none" />
-          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-white/20 rounded-full blur-[80px] pointer-events-none" />
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-black/10 rounded-full blur-[60px] pointer-events-none" />
+          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/10 rounded-full blur-[60px] pointer-events-none" />
           
           <CardContent className="pt-8 pb-8 px-7 relative z-10">
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-2 w-2 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)] animate-pulse" />
-              <p className="text-white/90 text-[11px] font-black tracking-[0.3em] uppercase drop-shadow-sm">{greeting || "Selamat Datang"},</p>
+              <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_12px_rgba(var(--primary),0.8)] animate-pulse" />
+              <p className="text-primary text-[11px] font-black tracking-[0.3em] uppercase drop-shadow-sm">{greeting || "Selamat Datang"},</p>
             </div>
             
             <div className="space-y-1">
-              <h2 className="text-[2.5rem] font-black tracking-tighter text-white uppercase italic leading-none flex flex-wrap gap-x-3 drop-shadow-md">
+              <h2 className="text-[2.5rem] font-black tracking-tighter text-white uppercase italic leading-none flex flex-wrap gap-x-3 drop-shadow-lg">
                 <span>{firstName}</span>
-                <span className="text-white/70 font-medium">{lastName}</span>
+                <span className="text-white/40 font-light">{lastName}</span>
               </h2>
             </div>
             
             <div className="flex items-center gap-4 mt-8">
-              <div className="h-[2px] w-12 bg-white/30 rounded-full" />
-              <p className="text-white/70 text-[10px] font-bold tracking-[0.25em] uppercase">Professional Dashboard</p>
+              <div className="h-[2px] w-12 bg-white/10 rounded-full" />
+              <p className="text-white/30 text-[10px] font-bold tracking-[0.25em] uppercase">Professional Dashboard</p>
             </div>
           </CardContent>
         </Card>
