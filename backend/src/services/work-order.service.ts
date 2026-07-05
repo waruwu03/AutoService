@@ -1,11 +1,12 @@
 // src/services/work-order.service.ts
 
 import { prisma } from '../config/database.config';
-import { WorkOrderStatus, MovementType } from '@prisma/client';
+import { WorkOrderStatus, MovementType, NotificationType } from '@prisma/client';
 import { AppError } from '../middleware/error.middleware';
 import { CreateWorkOrderInput } from '../schemas/work-order.schema';
 import { parsePagination, createPaginationMeta } from '../utils/pagination.util';
 import { PaginationQuery } from '../types/common.types';
+import { notificationService } from './notification.service';
 
 export class WorkOrderService {
   // Generate unique order number
@@ -230,7 +231,21 @@ export class WorkOrderService {
       return workOrder;
     }).then(async (wo) => {
        await this.recalculateTotals(wo.id);
-       return this.findById(wo.id);
+       const finalWo = await this.findById(wo.id);
+       
+       if (finalWo.assignedMechanicId) {
+         try {
+           await notificationService.createNotification({
+             userId: finalWo.assignedMechanicId,
+             type: NotificationType.WORK_ORDER_UPDATE,
+             title: 'SPK Baru Ditugaskan',
+             message: `Admin telah menugaskan SPK ${finalWo.orderNumber} untuk kendaraan ${finalWo.vehicle.licensePlate} kepada Anda.`
+           });
+         } catch (error) {
+           console.error("Failed to send notification:", error);
+         }
+       }
+       return finalWo;
     });
   }
 

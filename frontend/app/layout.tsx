@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthProvider } from '@/context/AuthContext'
 import { RootThemeProvider } from '@/components/root-theme-provider'
+import { SocketProvider } from '@/context/SocketContext'
 import './globals.css'
 
 const geist = Geist({ 
@@ -63,10 +64,12 @@ export default function RootLayout({
       <body className="font-sans antialiased bg-background" suppressHydrationWarning>
           <AuthProvider>
             <UIProvider>
-              <RootThemeProvider>
-                {children}
-                <Toaster position="top-right" richColors closeButton />
-              </RootThemeProvider>
+              <SocketProvider>
+                <RootThemeProvider>
+                  {children}
+                  <Toaster position="top-right" richColors closeButton />
+                </RootThemeProvider>
+              </SocketProvider>
             </UIProvider>
           </AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}

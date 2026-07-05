@@ -20,7 +20,7 @@ import { ChatBot } from "@/components/admin/chatbot"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Calendar as CalendarIcon, ChevronDown } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Logo } from "@/components/ui/logo"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { resolvePhotoUrl } from "@/lib/resolve-photo"
@@ -30,6 +30,13 @@ function MekanikHeader() {
   const { user } = useAuth()
   const { toggleChat, selectedDate, setSelectedDate } = useUI()
   const isSubPage = pathname.split("/").filter(Boolean).length > 2
+  const [hasUnread, setHasUnread] = useState(false)
+
+  useEffect(() => {
+    const handleNotification = () => setHasUnread(true)
+    window.addEventListener('new-notification', handleNotification)
+    return () => window.removeEventListener('new-notification', handleNotification)
+  }, [])
 
   const getTitle = () => {
     if (pathname === "/mekanik") return "Dashboard"
@@ -91,9 +98,14 @@ function MekanikHeader() {
         >
           <Bot className="h-5 w-5 text-slate-500 dark:text-zinc-400 group-hover:text-primary transition-colors" />
         </button>
-        <button className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl relative group transition-all duration-300 active:scale-95">
+        <button 
+          onClick={() => setHasUnread(false)}
+          className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl relative group transition-all duration-300 active:scale-95"
+        >
           <Bell className="h-5 w-5 text-slate-500 dark:text-zinc-400 group-hover:text-primary transition-colors" />
-          <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full ring-2 ring-white dark:ring-black shadow-[0_0_10px_rgba(var(--primary),0.8)]" />
+          {hasUnread && (
+            <span className="absolute top-2 right-2 h-2 w-2 bg-primary rounded-full ring-2 ring-white dark:ring-black shadow-[0_0_10px_rgba(var(--primary),0.8)]" />
+          )}
         </button>
         <Link href="/mekanik/profile" className="active:scale-95 transition-transform">
           <Avatar className="h-9 w-9 rounded-xl border border-slate-200 dark:border-white/5 shadow-inner">
