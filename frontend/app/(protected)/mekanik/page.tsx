@@ -194,14 +194,21 @@ export default function MekanikDashboard() {
             <div className="flex items-center justify-center p-8 text-slate-400 dark:text-zinc-500">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : jobs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-8 text-center bg-white/60 dark:bg-zinc-900/50 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
-              <ClipboardList className="h-10 w-10 text-slate-300 dark:text-zinc-600 mb-3" />
-              <p className="text-sm font-bold text-slate-500 dark:text-zinc-400">Tidak ada SPK aktif</p>
-              <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1 uppercase tracking-widest font-black">Pekerjaan Kosong</p>
-            </div>
           ) : (
-            jobs.map((job: any) => (
+            (() => {
+              const activeJobs = jobs.filter((j: any) => ['PENDING', 'IN_PROGRESS', 'WAITING_PARTS'].includes(j.status))
+              
+              if (activeJobs.length === 0) {
+                return (
+                  <div className="flex flex-col items-center justify-center p-8 text-center bg-white/60 dark:bg-zinc-900/50 rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none">
+                    <ClipboardList className="h-10 w-10 text-slate-300 dark:text-zinc-600 mb-3" />
+                    <p className="text-sm font-bold text-slate-500 dark:text-zinc-400">Tidak ada SPK aktif</p>
+                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-1 uppercase tracking-widest font-black">Pekerjaan Kosong</p>
+                  </div>
+                )
+              }
+              
+              return activeJobs.map((job: any) => (
             <Sheet key={job.id}>
               <SheetTrigger asChild>
                 <div className="block outline-none group cursor-pointer">
@@ -343,6 +350,7 @@ export default function MekanikDashboard() {
               </SheetContent>
             </Sheet>
             ))
+            })()
           )}
         </div>
       </div>

@@ -60,14 +60,18 @@ export default function PartsRequestPage() {
     return {
       ...r,
       reqStatus,
-      orderNumber: r.spk_number,
-      customer: { name: r.customer_name },
-      vehicle: { brand: r.vehicle_info, model: '', licensePlate: r.vehicle_plate },
-      spareparts: r.items.map((i: any) => ({
-        name: i.sparepart_name,
-        code: i.sparepart_code,
+      orderNumber: r.workOrder?.orderNumber || r.orderNumber,
+      customer: { name: r.workOrder?.customer?.name || r.customer_name || '-' },
+      vehicle: { 
+        brand: r.workOrder?.vehicle?.brand || r.vehicle_info || '', 
+        model: r.workOrder?.vehicle?.model || '', 
+        licensePlate: r.workOrder?.vehicle?.licensePlate || r.vehicle_plate || '' 
+      },
+      spareparts: r.items?.map((i: any) => ({
+        name: i.sparepart?.name || i.sparepart_name || '-',
+        code: i.sparepart?.code || i.sparepart_code || '-',
         quantity: i.quantity,
-      })),
+      })) || [],
     }
   })
 

@@ -242,7 +242,12 @@ export default function SPKPage() {
                       const customerName = spk.customer?.name || "-"
                       const vehicle = spk.vehicle
                       const mechanicName = spk.assignedMechanic?.name || "-"
-                      const status = statusConfig[spk.status as SPKStatus] || { label: spk.status, variant: "outline" }
+                      
+                      // Check if any invoice is paid
+                      const isPaid = spk.invoices?.some((inv: any) => inv.status === 'PAID')
+                      const status = isPaid 
+                        ? { label: "Lunas", variant: "default" as any }
+                        : statusConfig[spk.status as SPKStatus] || { label: spk.status, variant: "outline" as any }
 
                       return (
                         <TableRow key={spk.id}>
