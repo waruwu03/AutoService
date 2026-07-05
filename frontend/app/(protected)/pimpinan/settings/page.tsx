@@ -40,6 +40,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { PimpinanHeader } from "@/components/pimpinan/pimpinan-header"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function SettingsPage() {
   const [hasChanges, setHasChanges] = React.useState(false)
@@ -390,9 +391,12 @@ export default function SettingsPage() {
                     users.map((user: any) => (
                       <div key={user.id} className="flex items-center justify-between rounded-lg border p-4">
                         <div className="flex items-center gap-4">
-                          <div className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">
-                            {user.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
-                          </div>
+                          <Avatar className="size-10">
+                            <AvatarImage src={user.photoUrl || ""} alt={user.name} />
+                            <AvatarFallback className="bg-primary text-primary-foreground font-bold">
+                              {user.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
                           <div>
                             <p className="font-medium">{user.name}</p>
                             <p className="text-sm text-muted-foreground">{user.email}</p>

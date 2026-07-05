@@ -163,7 +163,7 @@ export default function MekanikLayout({ children }: { children: React.ReactNode 
   const { isChatOpen, closeChat } = useUI()
   
   return (
-    <div className="h-screen bg-slate-100 dark:bg-black relative selection:bg-primary/30 selection:text-primary overflow-hidden transition-colors duration-300">
+    <div className="h-[100dvh] bg-slate-100 dark:bg-black relative selection:bg-primary/30 selection:text-primary overflow-hidden transition-colors duration-300">
       {/* Precision Ambient Lighting */}
       <div className="fixed inset-0 pointer-events-none z-0 flex justify-center">
         <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[40%] bg-primary/5 dark:bg-primary/10 rounded-[100%] blur-[120px] opacity-60 mix-blend-multiply dark:mix-blend-screen" />
