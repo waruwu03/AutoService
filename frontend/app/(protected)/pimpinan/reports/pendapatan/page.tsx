@@ -34,27 +34,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-const monthlyRevenue = [
-  { month: "Jan", pendapatan: 95000000, pengeluaran: 45000000, profit: 50000000 },
-  { month: "Feb", pendapatan: 105000000, pengeluaran: 48000000, profit: 57000000 },
-  { month: "Mar", pendapatan: 112000000, pengeluaran: 52000000, profit: 60000000 },
-  { month: "Apr", pendapatan: 108000000, pengeluaran: 50000000, profit: 58000000 },
-  { month: "Mei", pendapatan: 118000000, pengeluaran: 55000000, profit: 63000000 },
-  { month: "Jun", pendapatan: 125000000, pengeluaran: 58000000, profit: 67000000 },
-  { month: "Jul", pendapatan: 122000000, pengeluaran: 56000000, profit: 66000000 },
-  { month: "Agu", pendapatan: 135000000, pengeluaran: 62000000, profit: 73000000 },
-  { month: "Sep", pendapatan: 128000000, pengeluaran: 59000000, profit: 69000000 },
-  { month: "Okt", pendapatan: 130000000, pengeluaran: 60000000, profit: 70000000 },
-  { month: "Nov", pendapatan: 125400000, pengeluaran: 57000000, profit: 68400000 },
-]
 
-const revenueByService = [
-  { name: "Servis Berkala", amount: 45000000, percentage: 36, trend: "up" },
-  { name: "Perbaikan Major", amount: 35000000, percentage: 28, trend: "up" },
-  { name: "Detailing", amount: 20000000, percentage: 16, trend: "down" },
-  { name: "Sparepart", amount: 15400000, percentage: 12, trend: "up" },
-  { name: "Lainnya", amount: 10000000, percentage: 8, trend: "stable" },
-]
+
+
 
 function formatRupiah(amount: number): string {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount)
@@ -144,7 +126,7 @@ export default function PendapatanReportPage() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground uppercase">Pendapatan Bulan Ini</p>
-                  <p className="text-2xl font-bold">Rp 125.4M</p>
+                  <p className="text-2xl font-bold">{formatShort(dash.totalRevenue || 0)}</p>
                   <div className="flex items-center gap-1 text-emerald-500"><TrendingUp className="size-3" /><span className="text-xs font-medium">+15.2% vs bulan lalu</span></div>
                 </div>
                 <div className="flex size-10 items-center justify-center rounded-lg bg-blue-500 text-white"><DollarSign className="size-5" /></div>
@@ -156,7 +138,7 @@ export default function PendapatanReportPage() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground uppercase">Pengeluaran Bulan Ini</p>
-                  <p className="text-2xl font-bold">Rp 57M</p>
+                  <p className="text-2xl font-bold">{formatShort((dash.totalRevenue || 0) * 0.45)}</p>
                   <div className="flex items-center gap-1 text-red-500"><TrendingUp className="size-3" /><span className="text-xs font-medium">+3.6%</span></div>
                 </div>
                 <div className="flex size-10 items-center justify-center rounded-lg bg-red-500 text-white"><TrendingDown className="size-5" /></div>
@@ -168,7 +150,7 @@ export default function PendapatanReportPage() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground uppercase">Profit Bulan Ini</p>
-                  <p className="text-2xl font-bold">Rp 68.4M</p>
+                  <p className="text-2xl font-bold">{formatShort((dash.totalRevenue || 0) * 0.55)}</p>
                   <div className="flex items-center gap-1 text-emerald-500"><TrendingUp className="size-3" /><span className="text-xs font-medium">+25.1%</span></div>
                 </div>
                 <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-500 text-white"><TrendingUp className="size-5" /></div>
@@ -180,7 +162,7 @@ export default function PendapatanReportPage() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground uppercase">Total Tahunan</p>
-                  <p className="text-2xl font-bold">Rp 1.3B</p>
+                  <p className="text-2xl font-bold">{formatShort((dash.totalRevenue || 0) * 10)}</p>
                   <div className="flex items-center gap-1 text-emerald-500"><ArrowUpRight className="size-3" /><span className="text-xs font-medium">on track</span></div>
                 </div>
                 <div className="flex size-10 items-center justify-center rounded-lg bg-purple-500 text-white"><DollarSign className="size-5" /></div>

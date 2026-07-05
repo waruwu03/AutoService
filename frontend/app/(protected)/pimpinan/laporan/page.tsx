@@ -1,5 +1,6 @@
 'use client'
 
+import * as React from 'react'
 import { useState } from 'react'
 import useSWR from 'swr'
 import { format, subDays, startOfMonth, endOfMonth, startOfYear } from 'date-fns'
@@ -75,7 +76,7 @@ export default function PimpinanLaporanPage() {
     setIsExporting(true)
     try {
       const response = await apiClient.get(
-        `/pimpinan/reports/export?period=${period}&type=${reportType}&format=${exportFormat}`,
+        `/reports/export?type=${reportType}&format=${exportFormat}`,
         { responseType: 'blob' }
       )
       

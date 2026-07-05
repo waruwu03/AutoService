@@ -301,53 +301,7 @@ export function AdminSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-white/5 bg-black/20">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  size="lg"
-                  className="data-[state=open]:bg-white/5 data-[state=open]:text-white rounded-[1.5rem] h-16 transition-all border border-transparent hover:border-white/5"
-                >
-                  <Avatar className="h-10 w-10 rounded-xl border-2 border-white/10">
-                    <AvatarImage src={displayPhoto} alt={displayName} className="object-cover" />
-                    <AvatarFallback className="rounded-xl bg-slate-800 text-primary font-black text-xs">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden ml-3">
-                    <span className="truncate font-black text-white uppercase italic tracking-tighter text-sm">{displayName}</span>
-                    <span className="truncate text-[9px] text-slate-500 uppercase tracking-widest font-black mt-1">Sytem {user?.role || 'Admin'}</span>
-                  </div>
-                  <ChevronDown className="ml-auto size-4 text-slate-500 group-data-[collapsible=icon]:hidden" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-64 p-2 rounded-[2rem] bg-zinc-950 border-white/10 text-white shadow-2xl"
-                side="top"
-                align="end"
-                sideOffset={12}
-              >
-                <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white rounded-xl h-12 px-4 cursor-pointer">
-                  <Link href="/admin/settings" className="flex items-center gap-3">
-                    <Settings className="size-4" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">System Control</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-white/5 mx-2" />
-                <DropdownMenuItem
-                  className="text-rose-500 focus:bg-rose-500 focus:text-white rounded-xl h-12 px-4 cursor-pointer"
-                  onClick={() => logout()}
-                >
-                  <LogOut className="mr-3 size-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Terminate Session</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+
     </Sidebar>
   )
 }

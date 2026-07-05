@@ -97,7 +97,7 @@ router.get('/group/:group', settingController.getByGroup);
  *       403:
  *         description: Forbidden - Hanya Admin
  */
-router.post('/', roleMiddleware('ADMIN'), settingController.update);
+router.post('/', roleMiddleware('ADMIN', 'PIMPINAN'), settingController.update);
 
 /**
  * @swagger
@@ -138,6 +138,6 @@ router.post('/', roleMiddleware('ADMIN'), settingController.update);
  *       403:
  *         description: Forbidden - Hanya Admin
  */
-router.post('/bulk', roleMiddleware('ADMIN'), settingController.updateBulk);
+router.post('/bulk', roleMiddleware('ADMIN', 'PIMPINAN'), settingController.updateBulk);
 
 export default router;

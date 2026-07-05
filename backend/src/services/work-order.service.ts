@@ -86,6 +86,8 @@ export class WorkOrderService {
             },
           },
           assignedMechanic: { select: { id: true, name: true } },
+          createdBy: { select: { id: true, name: true } },
+          _count: { select: { services: true } }
         },
       }),
       prisma.workOrder.count({ where }),

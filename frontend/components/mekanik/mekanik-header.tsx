@@ -78,14 +78,7 @@ export function MekanikHeader({ title, description }: MekanikHeaderProps) {
       <SidebarTrigger className="-ml-1 text-slate-500 hover:text-primary transition-all hover:scale-110" />
       <Separator orientation="vertical" className="h-6 mx-2 bg-slate-200 dark:bg-white/10" />
 
-      {title && (
-        <div className="flex flex-col ml-2">
-          <h1 className="text-xl font-black uppercase tracking-tighter text-slate-900 dark:text-white leading-none mb-1">{title}</h1>
-          {description && (
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none">{description}</p>
-          )}
-        </div>
-      )}
+
 
       <div className="ml-auto flex items-center gap-6">
         {/* Status Indicator */}

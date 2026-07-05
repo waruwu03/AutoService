@@ -60,12 +60,12 @@ export default function InventoryReportPage() {
   const [isExporting, setIsExporting] = useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
 
-  const { data: invRaw, isLoading: invLoading } = useSWR('/reports/inventory', fetcher)
-  const { data: movRaw, isLoading: movLoading } = useSWR('/inventory/stock-movements?limit=5', fetcher)
+  const { data: invRaw, isLoading: invLoading } = useSWR('/inventory/spareparts?limit=1000', fetcher)
+  const { data: movRaw, isLoading: movLoading } = useSWR('/inventory/stock-movements?limit=1000', fetcher)
 
   const isLoading = invLoading || movLoading
 
-  const inventoryItems = invRaw?.data?.items?.map((i: any) => ({
+  const inventoryItems = invRaw?.data?.data?.map((i: any) => ({
     id: i.id,
     name: i.name,
     sku: i.code,
@@ -98,14 +98,24 @@ export default function InventoryReportPage() {
     by: m.createdBy?.name || 'Sistem'
   })) : []
 
-  const stockMovement = [
-    { month: "Jun", masuk: 150, keluar: 130 },
-    { month: "Jul", masuk: 180, keluar: 160 },
-    { month: "Aug", masuk: 165, keluar: 155 },
-    { month: "Sep", masuk: 190, keluar: 170 },
-    { month: "Okt", masuk: 175, keluar: 165 },
-    { month: "Nov", masuk: 145, keluar: 140 },
-  ]
+  
+  const stockMovement = React.useMemo(() => {
+    if (!movRaw?.data?.data) return [];
+    const grouped = {};
+    const movements = movRaw.data.data;
+    movements.forEach(m => {
+      const date = new Date(m.createdAt);
+      const month = date.toLocaleString('id-ID', { month: 'short' });
+      if (!grouped[month]) grouped[month] = { month, masuk: 0, keluar: 0 };
+      if (m.movementType.includes('OUT') || m.movementType.includes('SALE')) {
+        grouped[month].keluar += m.quantity;
+      } else {
+        grouped[month].masuk += m.quantity;
+      }
+    });
+    return Object.values(grouped).reverse().slice(-6); // last 6 months
+  }, [movRaw]);
+
 
   const handleExport = async (format: 'pdf' | 'excel') => {
     setIsExporting(true)

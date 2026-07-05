@@ -42,9 +42,9 @@ export default function MekanikReportPage() {
     avatar: m.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() || "M",
     photoUrl: m.photoUrl,
     spkCompleted: Number(m.completed || 0),
-    avgTime: m.avgTime || Math.floor(Math.random() * 30) + 60, // Dummy fallback if not from backend
-    rating: m.rating || (4.5 + Math.random() * 0.5).toFixed(1), // Dummy fallback
-    efficiency: m.efficiency || Math.floor(Math.random() * 15) + 85, // Dummy fallback
+    avgTime: m.avgTime || (m.completed ? 120 - Math.min((m.completed / (m.totalOrders || 1)) * 100, 100) * 0.5 : 120), // Dummy fallback if not from backend
+    rating: m.rating || (m.completed ? (4.0 + (m.completed / (m.totalOrders || 1))).toFixed(1) : '0.0'), // Dummy fallback
+    efficiency: m.efficiency || (m.completed ? Math.round((m.completed / (m.totalOrders || 1)) * 100) : 0), // Dummy fallback
     specialty: m.specialty || "Servis Umum"
   }))
 

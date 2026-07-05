@@ -110,7 +110,7 @@ router.get('/:id', (req, res, next) => userController.findById(req, res, next));
  *       403:
  *         description: Forbidden - Hanya Admin
  */
-router.post('/', roleMiddleware('ADMIN'), (req, res, next) => userController.create(req, res, next));
+router.post('/', roleMiddleware('ADMIN', 'PIMPINAN'), (req, res, next) => userController.create(req, res, next));
 
 /**
  * @swagger
@@ -147,7 +147,7 @@ router.post('/', roleMiddleware('ADMIN'), (req, res, next) => userController.cre
  *       404:
  *         description: User tidak ditemukan
  */
-router.put('/:id', roleMiddleware('ADMIN'), (req, res, next) => userController.update(req, res, next));
+router.put('/:id', roleMiddleware('ADMIN', 'PIMPINAN'), (req, res, next) => userController.update(req, res, next));
 
 /**
  * @swagger
@@ -168,6 +168,6 @@ router.put('/:id', roleMiddleware('ADMIN'), (req, res, next) => userController.u
  *       404:
  *         description: User tidak ditemukan
  */
-router.delete('/:id', roleMiddleware('ADMIN'), (req, res, next) => userController.delete(req, res, next));
+router.delete('/:id', roleMiddleware('ADMIN', 'PIMPINAN'), (req, res, next) => userController.delete(req, res, next));
 
 export default router;

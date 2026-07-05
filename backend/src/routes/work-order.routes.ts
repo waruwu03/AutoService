@@ -222,7 +222,7 @@ router.patch(
  */
 router.put(
   '/:id/status',
-  roleMiddleware('ADMIN', 'MEKANIK'),
+  roleMiddleware('ADMIN', 'MEKANIK', 'PIMPINAN'),
   (req, res, next) => workOrderController.updateStatus(req, res, next)
 );
 

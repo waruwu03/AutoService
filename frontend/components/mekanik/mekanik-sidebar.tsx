@@ -112,50 +112,7 @@ export function MekanikSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-white/5 bg-black/20">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton className="h-16 w-full flex items-center gap-4 px-3 rounded-[1.5rem] hover:bg-white/5 transition-all group border border-transparent hover:border-white/5">
-                  <Avatar className="size-10 shrink-0 border-2 border-white/10 group-hover:border-primary transition-colors rounded-xl">
-                    <AvatarImage src={displayPhoto} alt={displayName} className="object-cover" />
-                    <AvatarFallback className="bg-slate-800 text-primary font-black text-xs">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col items-start group-data-[collapsible=icon]:hidden overflow-hidden ml-1">
-                    <span className="text-sm font-black text-white truncate uppercase italic tracking-tighter leading-none mb-1.5">{displayName}</span>
-                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest leading-none">
-                      Active {user?.role || "Mekanik"}
-                    </span>
-                  </div>
-                  <ChevronUp className="ml-auto size-4 text-slate-500 group-data-[collapsible=icon]:hidden" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="top"
-                className="w-64 p-2 rounded-[2rem] bg-zinc-950 border-white/10 text-white shadow-2xl mb-2"
-              >
-                <DropdownMenuItem asChild className="focus:bg-white/10 focus:text-white rounded-xl h-12 px-4 cursor-pointer">
-                  <Link href="/mekanik/profile" className="flex items-center gap-3">
-                    <User className="size-4" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">My Account</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-white/5 mx-2" />
-                <DropdownMenuItem
-                  onClick={() => logout()}
-                  className="text-rose-500 focus:bg-rose-500 focus:text-white rounded-xl h-12 px-4 cursor-pointer"
-                >
-                  <LogOut className="size-4 mr-3" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Sign Out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+
     </Sidebar>
   )
 }
