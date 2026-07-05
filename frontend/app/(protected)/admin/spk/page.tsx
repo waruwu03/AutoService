@@ -243,8 +243,10 @@ export default function SPKPage() {
                       const vehicle = spk.vehicle
                       const mechanicName = spk.assignedMechanic?.name || "-"
                       
-                      // Check if any invoice is paid
-                      const isPaid = spk.invoices?.some((inv: any) => inv.status === 'PAID')
+                      // Check if any invoice is paid OR if it's invoiced with Rp 0
+                      const isPaid = spk.invoices?.some((inv: any) => inv.status === 'PAID') || 
+                                     (spk.status === 'INVOICED' && Number(spk.grandTotal || spk.estimatedCost || 0) === 0)
+                                     
                       const status = isPaid 
                         ? { label: "Lunas", variant: "default" as any }
                         : statusConfig[spk.status as SPKStatus] || { label: spk.status, variant: "outline" as any }

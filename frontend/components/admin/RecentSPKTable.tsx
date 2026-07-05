@@ -101,7 +101,11 @@ export function RecentSPKTable({ data, isLoading }: RecentSPKTableProps) {
             ) : (
               data.map((rawSpk) => {
                 const spk = rawSpk as any
-                const status = statusConfig[spk.status] || { label: spk.status, variant: 'outline' }
+                const isPaid = spk.invoices?.some((inv: any) => inv.status === 'PAID') || 
+                               (spk.status === 'INVOICED' && Number(spk.grandTotal || spk.estimatedCost || 0) === 0)
+                const status = isPaid 
+                  ? { label: 'Lunas', variant: 'default' as any }
+                  : statusConfig[spk.status] || { label: spk.status, variant: 'outline' as any }
                 return (
                   <TableRow key={spk.id}>
                     <TableCell className="font-medium">{spk.nomor_spk ?? spk.orderNumber ?? '-'}</TableCell>
