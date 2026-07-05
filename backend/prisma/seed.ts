@@ -132,29 +132,37 @@ async function main() {
   console.log('✅ Default settings seeded');
 
   // 5. Create Mock Customers
-  const customer1 = await prisma.customer.create({
-    data: {
-      name: 'Andi Saputra',
-      phone: '08111222333',
-      email: 'andi@example.com',
-      customerType: CustomerType.PRIBADI,
-    }
-  });
+  let customer1 = await prisma.customer.findFirst({ where: { email: 'andi@example.com' }});
+  if (!customer1) {
+    customer1 = await prisma.customer.create({
+      data: {
+        name: 'Andi Saputra',
+        phone: '08111222333',
+        email: 'andi@example.com',
+        customerType: CustomerType.PRIBADI,
+      }
+    });
+  }
   
-  const customer2 = await prisma.customer.create({
-    data: {
-      name: 'PT. Maju Bersama',
-      phone: '02199887766',
-      email: 'contact@majubersama.co.id',
-      customerType: CustomerType.KORPORAT,
-      companyName: 'PT. Maju Bersama',
-    }
-  });
+  let customer2 = await prisma.customer.findFirst({ where: { email: 'contact@majubersama.co.id' }});
+  if (!customer2) {
+    customer2 = await prisma.customer.create({
+      data: {
+        name: 'PT. Maju Bersama',
+        phone: '02199887766',
+        email: 'contact@majubersama.co.id',
+        customerType: CustomerType.KORPORAT,
+        companyName: 'PT. Maju Bersama',
+      }
+    });
+  }
   console.log('✅ Mock Customers seeded');
 
   // 6. Create Mock Vehicles
-  const vehicle1 = await prisma.vehicle.create({
-    data: {
+  const vehicle1 = await prisma.vehicle.upsert({
+    where: { licensePlate: 'B 1234 ABC' },
+    update: {},
+    create: {
       customerId: customer1.id,
       licensePlate: 'B 1234 ABC',
       brand: 'Toyota',
@@ -164,8 +172,10 @@ async function main() {
     }
   });
 
-  const vehicle2 = await prisma.vehicle.create({
-    data: {
+  const vehicle2 = await prisma.vehicle.upsert({
+    where: { licensePlate: 'D 5678 DEF' },
+    update: {},
+    create: {
       customerId: customer2.id,
       licensePlate: 'D 5678 DEF',
       brand: 'Honda',
@@ -214,8 +224,10 @@ async function main() {
 
   // 8. Create Mock WorkOrders (SPK)
   // SPK 1: In Progress
-  const wo1 = await prisma.workOrder.create({
-    data: {
+  const wo1 = await prisma.workOrder.upsert({
+    where: { orderNumber: 'SPK-202607-0001' },
+    update: {},
+    create: {
       orderNumber: 'SPK-202607-0001',
       customerId: customer1.id,
       vehicleId: vehicle1.id,
@@ -231,8 +243,10 @@ async function main() {
   });
 
   // SPK 2: Completed and Invoiced
-  const wo2 = await prisma.workOrder.create({
-    data: {
+  const wo2 = await prisma.workOrder.upsert({
+    where: { orderNumber: 'SPK-202607-0002' },
+    update: {},
+    create: {
       orderNumber: 'SPK-202607-0002',
       customerId: customer2.id,
       vehicleId: vehicle2.id,
@@ -261,8 +275,10 @@ async function main() {
   console.log('✅ Mock WorkOrders seeded');
 
   // 9. Create Mock Invoice & Payment for WO2
-  const invoice = await prisma.invoice.create({
-    data: {
+  const invoice = await prisma.invoice.upsert({
+    where: { invoiceNumber: 'INV-202607-0001' },
+    update: {},
+    create: {
       invoiceNumber: 'INV-202607-0001',
       workOrderId: wo2.id,
       customerId: customer2.id,
