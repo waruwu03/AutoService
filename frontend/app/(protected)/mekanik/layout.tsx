@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { Home, ClipboardList, Package, History, User, Wrench, Bell, ChevronLeft, Bot } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -27,6 +27,7 @@ import { resolvePhotoUrl } from "@/lib/resolve-photo"
 
 function MekanikHeader() {
   const pathname = usePathname()
+  const router = useRouter()
   const { user } = useAuth()
   const { toggleChat, selectedDate, setSelectedDate } = useUI()
   const isSubPage = pathname.split("/").filter(Boolean).length > 2
@@ -56,9 +57,9 @@ function MekanikHeader() {
     <header className="z-50 w-full bg-white/80 dark:bg-black/80 backdrop-blur-2xl border-b border-slate-200 dark:border-white/5 h-14 flex items-center justify-between px-5 shadow-sm dark:shadow-xl transition-colors duration-300 shrink-0">
       <div className="flex items-center gap-4">
         {isSubPage ? (
-          <Link href="/mekanik" className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-all duration-300 active:scale-95 group">
+          <button onClick={() => router.back()} className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-all duration-300 active:scale-95 group outline-none">
             <ChevronLeft className="h-5 w-5 text-primary group-hover:-translate-x-0.5 transition-transform" />
-          </Link>
+          </button>
         ) : (
           <div className="flex items-center gap-2.5">
             <Logo iconSize={20} textSize="text-xs" subtitle="MEKANIK" className="gap-2" />

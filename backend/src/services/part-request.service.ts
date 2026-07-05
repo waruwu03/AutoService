@@ -258,6 +258,36 @@ export class PartRequestService {
       },
     });
   }
+
+  async fulfill(id: string, userId: string) {
+    const request = await (prisma as any).partRequest.findUnique({
+      where: { id },
+    });
+
+    if (!request) {
+      throw new AppError('Part request not found', 404);
+    }
+
+    if (request.status !== PartRequestStatus.APPROVED) {
+      throw new AppError('Only APPROVED requests can be fulfilled/received', 400);
+    }
+
+    // Usually only the requester can confirm receipt, but Admin can also do it
+    if (request.requestedById !== userId) {
+      const user = await (prisma as any).user.findUnique({ where: { id: userId } });
+      if (!user || user.role !== 'ADMIN') {
+        throw new AppError('You are not authorized to fulfill this request', 403);
+      }
+    }
+
+    return (prisma as any).partRequest.update({
+      where: { id },
+      data: {
+        status: PartRequestStatus.FULFILLED,
+        updatedAt: new Date(),
+      },
+    });
+  }
 }
 
 export const partRequestService = new PartRequestService();

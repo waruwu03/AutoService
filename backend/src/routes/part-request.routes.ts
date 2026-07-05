@@ -193,4 +193,28 @@ router.post('/:id/reject',
   (req, res, next) => partRequestController.reject(req, res, next)
 );
 
+/**
+ * @swagger
+ * /gudang/part-requests/{id}/fulfill:
+ *   post:
+ *     summary: Konfirmasi penerimaan part (Mekanik/Admin)
+ *     tags: [Part Requests]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Part berhasil diterima
+ *       400:
+ *         description: Status permintaan bukan APPROVED
+ */
+router.post('/:id/fulfill', 
+  roleMiddleware('ADMIN', 'MEKANIK'),
+  (req, res, next) => partRequestController.fulfill(req, res, next)
+);
+
 export default router;

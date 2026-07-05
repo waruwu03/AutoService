@@ -63,7 +63,7 @@ export default function MekanikDashboard() {
   const dateStr = format(selectedDate, 'yyyy-MM-dd')
 
   const { data: woData, isLoading, mutate } = useSWR(
-    user ? `/work-orders?assignedMechanicId=${user.id}&date=${dateStr}&limit=10&sortBy=createdAt&sortOrder=desc` : null, 
+    user ? `/work-orders?assignedMechanicId=${user.id}&limit=10&sortBy=createdAt&sortOrder=desc` : null, 
     fetcher
   )
   

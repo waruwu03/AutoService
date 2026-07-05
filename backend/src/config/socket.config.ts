@@ -22,7 +22,7 @@ export const initializeSocket = (httpServer: HttpServer) => {
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || 'fallback_secret') as any;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default-secret-change-in-production') as any;
       socket.data.user = decoded;
       next();
     } catch (err) {

@@ -56,6 +56,16 @@ export class PartRequestController {
       next(error);
     }
   }
+
+  async fulfill(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user!.userId;
+      const result = await partRequestService.fulfill(req.params.id as string, userId);
+      sendSuccess(res, result, 'Request fulfilled successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const partRequestController = new PartRequestController();

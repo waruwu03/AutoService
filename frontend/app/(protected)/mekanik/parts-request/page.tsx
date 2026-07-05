@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Package, Plus, Clock, CheckCircle2, XCircle, ChevronRight, Search, Car, User, Loader2 } from "lucide-react"
+import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +14,7 @@ import { fetcher } from "@/lib/api-client"
 import { useAuth } from "@/context/AuthContext"
 import { toast } from "sonner"
 import { PartRequestDialog } from "@/components/mekanik/PartRequestDialog"
+import { apiClient } from "@/lib/api-client"
 
 type RequestStatus = "all" | "PENDING" | "APPROVED" | "REJECTED" | "RECEIVED"
 
@@ -28,11 +30,25 @@ export default function PartsRequestPage() {
   const [activeTab, setActiveTab] = useState<RequestStatus>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [requestDialogOpen, setRequestDialogOpen] = useState(false)
+  const [isFulfilling, setIsFulfilling] = useState<string | null>(null)
 
   const { data: rawData, isLoading, mutate } = useSWR(
     user ? `/gudang/part-requests?requestedById=${user.id}&limit=100` : null,
     fetcher
   )
+
+  const handleFulfill = async (id: string) => {
+    setIsFulfilling(id)
+    try {
+      await apiClient.post(`/gudang/part-requests/${id}/fulfill`)
+      toast.success("Part berhasil dikonfirmasi diterima")
+      mutate()
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Gagal mengonfirmasi penerimaan part")
+    } finally {
+      setIsFulfilling(null)
+    }
+  }
 
   const realRequests: any[] = Array.isArray(rawData?.data) ? rawData.data : []
 
@@ -214,9 +230,28 @@ export default function PartsRequestPage() {
                       <Clock className="h-3 w-3" />
                       {createdAt.toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}
                     </div>
-                    <button className="flex items-center gap-1 text-[10px] font-black text-primary uppercase tracking-widest hover:gap-2 transition-all">
-                      Detail <ChevronRight className="h-3 w-3" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {req.reqStatus === 'APPROVED' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleFulfill(req.id)}
+                          disabled={isFulfilling === req.id}
+                          className="h-7 text-[9px] font-black uppercase tracking-wider bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-3 shadow-sm"
+                        >
+                          {isFulfilling === req.id ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle2 className="h-3 w-3 mr-1" />}
+                          Terima Part
+                        </Button>
+                      )}
+                      {req.workOrderId ? (
+                        <Link href={`/mekanik/jobs/${req.workOrderId}`} className="flex items-center gap-1 text-[10px] font-black text-primary uppercase tracking-widest hover:gap-2 transition-all outline-none bg-slate-50 dark:bg-zinc-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/5">
+                          Detail <ChevronRight className="h-3 w-3" />
+                        </Link>
+                      ) : (
+                        <button className="flex items-center gap-1 text-[10px] font-black text-primary uppercase tracking-widest hover:gap-2 transition-all outline-none opacity-50 cursor-not-allowed bg-slate-50 dark:bg-zinc-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/5" disabled>
+                          Detail <ChevronRight className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
