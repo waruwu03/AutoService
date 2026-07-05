@@ -65,6 +65,15 @@ export class InvoiceController {
       next(error);
     }
   }
+
+  async sendEmail(req: Request, res: Response, next: NextFunction) {
+    try {
+      await invoiceService.sendInvoiceEmail(req.params.id as string);
+      sendSuccess(res, { message: 'Email sent successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const invoiceController = new InvoiceController();

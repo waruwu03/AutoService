@@ -29,6 +29,7 @@ import { resolvePhotoUrl } from "@/lib/resolve-photo"
 import { formatDistanceToNow } from "date-fns"
 import { id as localeID } from "date-fns/locale"
 import { cn } from "@/lib/utils"
+import { useSocketNotifications } from "@/hooks/useSocketNotifications"
 
 interface GudangHeaderProps {
   title?: string
@@ -48,6 +49,8 @@ export function GudangHeader({ title, description }: GudangHeaderProps) {
   const { data: notifications, mutate: mutateNotifications } = useSWR("/notifications", fetcher, {
     refreshInterval: 30000
   })
+  useSocketNotifications(mutateNotifications)
+  
   const unreadCount = Array.isArray(notifications) ? notifications.filter((n: any) => !n.isRead).length : 0
 
   const [isUploading, setIsUploading] = useState(false)

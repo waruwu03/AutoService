@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Loader2 } from 'lucide-react'
 
+import { SocketProvider } from '@/components/providers/socket-provider'
+
 export default function ProtectedLayout({
   children,
 }: {
@@ -34,5 +36,9 @@ export default function ProtectedLayout({
     return null
   }
 
-  return <>{children}</>
+  return (
+    <SocketProvider>
+      {children}
+    </SocketProvider>
+  )
 }

@@ -48,32 +48,32 @@ export function StokTable({ data, onEdit }: StokTableProps) {
         </TableHeader>
         <TableBody>
           {data.map((item) => (
-            <TableRow key={item.id} className={item.stok <= item.stok_minimum ? 'bg-yellow-50' : ''}>
+            <TableRow key={item.id} className={(item as any).stok <= (item as any).stok_minimum ? 'bg-yellow-50' : ''}>
               <TableCell className="font-mono font-medium">
                 {item.kode}
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  {item.stok <= item.stok_minimum && (
+                  {(item as any).stok <= (item as any).stok_minimum && (
                     <AlertTriangle className="h-4 w-4 text-yellow-500" />
                   )}
                   {item.nama}
                 </div>
               </TableCell>
-              <TableCell>{item.category?.nama}</TableCell>
+              <TableCell>{(item as any).category?.nama || (item as any).category?.name || (item as any).kategori}</TableCell>
               <TableCell className="text-right font-medium">
-                {item.stok} {item.satuan}
+                {(item as any).stok} {item.satuan}
               </TableCell>
               <TableCell className="text-right text-muted-foreground">
-                {item.stok_minimum} {item.satuan}
+                {(item as any).stok_minimum} {item.satuan}
               </TableCell>
               <TableCell className="text-right">
-                {formatCurrency(item.harga_beli)}
+                {formatCurrency(Number((item as any).harga_beli ?? 0))}
               </TableCell>
               <TableCell className="text-right">
-                {formatCurrency(item.harga_jual)}
+                {formatCurrency(Number((item as any).harga_jual ?? 0))}
               </TableCell>
-              <TableCell>{getStockBadge(item.stok, item.stok_minimum)}</TableCell>
+              <TableCell>{getStockBadge((item as any).stok, (item as any).stok_minimum)}</TableCell>
               <TableCell>
                 <div className="flex justify-end">
                   <Button

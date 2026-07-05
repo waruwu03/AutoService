@@ -5,6 +5,8 @@ import { InvoiceStatus, WorkOrderStatus } from '@prisma/client';
 import { AppError } from '../middleware/error.middleware';
 import { parsePagination, createPaginationMeta } from '../utils/pagination.util';
 import { PaginationQuery } from '../types/common.types';
+import { emailService } from './email.service';
+import PDFDocument from 'pdfkit';
 
 export class InvoiceService {
   async generateInvoiceNumber(): Promise<string> {
@@ -262,6 +264,52 @@ export class InvoiceService {
         workOrder: { select: { id: true, orderNumber: true } },
       },
       orderBy: { dueDate: 'asc' },
+    });
+  }
+
+  async sendInvoiceEmail(invoiceId: string) {
+    const invoice = await this.findById(invoiceId);
+    if (!invoice.customer?.email) {
+      throw new AppError('Customer does not have an email address', 400);
+    }
+
+    // Generate basic PDF in memory
+    const doc = new PDFDocument({ margin: 50 });
+    const buffers: Buffer[] = [];
+    doc.on('data', buffers.push.bind(buffers));
+    
+    // Build PDF content
+    doc.fontSize(20).text('INVOICE', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(12).text(`Invoice Number: ${invoice.invoiceNumber}`);
+    doc.text(`Date: ${new Date().toLocaleDateString('id-ID')}`);
+    doc.text(`Customer: ${invoice.customer.name}`);
+    doc.moveDown();
+    doc.text(`Total Amount: Rp ${Number(invoice.grandTotal).toLocaleString('id-ID')}`);
+    doc.text(`Amount Due: Rp ${Number(invoice.amountDue).toLocaleString('id-ID')}`);
+    
+    doc.end();
+
+    // Return a promise that resolves when the PDF buffer is ready and email is sent
+    return new Promise((resolve, reject) => {
+      doc.on('end', async () => {
+        try {
+          const pdfData = Buffer.concat(buffers);
+          await emailService.sendInvoiceEmail(invoice.customer.email!, invoice.invoiceNumber, pdfData);
+          
+          // Update status if it's DRAFT
+          if (invoice.status === 'DRAFT') {
+            await prisma.invoice.update({
+              where: { id: invoiceId },
+              data: { status: 'SENT' },
+            });
+          }
+          
+          resolve(true);
+        } catch (error) {
+          reject(error);
+        }
+      });
     });
   }
 }

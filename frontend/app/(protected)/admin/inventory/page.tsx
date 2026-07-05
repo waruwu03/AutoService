@@ -111,7 +111,7 @@ export default function AdminInventoryPage() {
             title="Barang Kritis"
             value={isLoading ? "..." : criticalCount.toString()}
             icon={AlertTriangle}
-            trend={{ value: criticalCount > 0 ? "Butuh Restock" : "Aman", positive: criticalCount === 0 }}
+            description={criticalCount > 0 ? "Butuh Restock" : "Aman"}
           />
           <StatsCard
             title="Total Nilai Stok"

@@ -11,6 +11,8 @@ import routes from './routes';
 import { errorMiddleware } from './middleware/error.middleware';
 import { apiLimiter } from './middleware/rate-limit.middleware';
 import path from 'path';
+import { createServer } from 'http';
+import { initializeSocket } from './config/socket.config';
 
 const app: Express = express();
 const port = process.env.PORT || 3001;
@@ -100,10 +102,14 @@ app.use(errorMiddleware);
 // Initialize application
 const startServer = async () => {
   try {
-    app.listen(port, () => {
+    const httpServer = createServer(app);
+    initializeSocket(httpServer);
+
+    httpServer.listen(port, () => {
       console.log(`
 🚀 Server ready at: http://localhost:${port}
 📖 Swagger UI: http://localhost:${port}/api-docs
+🔌 WebSockets Enabled
       `);
     });
   } catch (error) {

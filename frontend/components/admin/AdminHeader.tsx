@@ -27,6 +27,7 @@ import { Loader2, Bot } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { id as localeID } from "date-fns/locale"
 import { useUI } from "@/context/UIContext"
+import { useSocketNotifications } from "@/hooks/useSocketNotifications"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "http://localhost:3001"
 
@@ -67,6 +68,7 @@ export function AdminHeader({ title, description }: AdminHeaderProps) {
   const { data: notifications, mutate: mutateNotifications } = useSWR("/notifications", fetcher, {
     refreshInterval: 30000 // Refresh every 30 seconds
   })
+  useSocketNotifications(mutateNotifications)
   
   const unreadCount = Array.isArray(notifications) ? notifications.filter((n: any) => !n.isRead).length : 0
 

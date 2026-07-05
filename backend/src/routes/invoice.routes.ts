@@ -175,4 +175,31 @@ router.post(
   (req, res, next) => invoiceController.recordPayment(req, res, next)
 );
 
+/**
+ * @swagger
+ * /invoices/{id}/send-email:
+ *   post:
+ *     summary: Kirim email invoice ke customer (Admin only)
+ *     tags: [Invoices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Email berhasil dikirim
+ *       400:
+ *         description: Customer tidak memiliki email
+ *       404:
+ *         description: Invoice tidak ditemukan
+ */
+router.post(
+  '/:id/send-email',
+  roleMiddleware('ADMIN'),
+  (req, res, next) => invoiceController.sendEmail(req, res, next)
+);
+
 export default router;

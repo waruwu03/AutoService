@@ -111,7 +111,7 @@ export default function MechanicsPage() {
   const openDetail = async (mekanik: any) => {
     // Fetch full detail to get address, phone etc.
     try {
-      const res = await api.get(`/users/${mekanik.id}`)
+      const res = await api.get(`/users/${mekanik.id}`) as any
       const fullData = res.data?.data || res.data || mekanik
       setSelectedMechanic({ ...mekanik, ...fullData })
     } catch {

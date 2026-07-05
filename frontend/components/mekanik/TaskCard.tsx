@@ -112,7 +112,7 @@ export function PendingTaskCard({ task, onAction }: TaskCardProps) {
             </div>
             <p className="text-sm">{task.keluhan}</p>
             <p className="text-xs text-muted-foreground">
-              Diterima: {format(new Date(task.created_at), 'HH:mm, dd MMM yyyy', { locale: id })}
+              Diterima: {format(new Date((task as any).created_at || (task as any).createdAt || new Date()), 'HH:mm, dd MMM yyyy', { locale: id })}
             </p>
           </div>
           <Button

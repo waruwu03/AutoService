@@ -46,7 +46,7 @@ import type { SPK, SPKStatus } from '@/types'
 interface SPKTableProps {
   data: SPK[]
   isLoading: boolean
-  onDelete: (id: number) => void
+  onDelete: (id: string) => void
   isDeleting?: boolean
 }
 
@@ -66,7 +66,7 @@ const statusConfig: Record<SPKStatus, {
 }
 
 export function SPKTable({ data, isLoading, onDelete, isDeleting }: SPKTableProps) {
-  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -133,7 +133,7 @@ export function SPKTable({ data, isLoading, onDelete, isDeleting }: SPKTableProp
                     <TableCell>
                       {spk.customer ? (
                         <Link 
-                          href={`/admin/customers/${spk.customer_id ?? (spk as any).customerId}`}
+                          href={`/admin/customers/${(spk as any).customer_id ?? (spk as any).customerId}`}
                           className="text-primary hover:underline"
                         >
                           {(spk as any).customer?.nama ?? (spk as any).customer?.name ?? '-'}

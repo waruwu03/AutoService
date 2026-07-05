@@ -47,12 +47,12 @@ import type { Customer } from '@/types'
 interface CustomerTableProps {
   data: Customer[]
   isLoading: boolean
-  onDelete: (id: number) => void
+  onDelete: (id: string) => void
   isDeleting?: boolean
 }
 
 export function CustomerTable({ data, isLoading, onDelete, isDeleting }: CustomerTableProps) {
-  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const handleDelete = () => {
     if (deleteId) {
@@ -136,7 +136,7 @@ export function CustomerTable({ data, isLoading, onDelete, isDeleting }: Custome
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {format(new Date(customer.created_at), 'dd MMM yyyy', { locale: id })}
+                    {format(new Date((customer as any).created_at || (customer as any).createdAt || new Date()), 'dd MMM yyyy', { locale: id })}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

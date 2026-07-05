@@ -15,6 +15,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { formatDistanceToNow } from "date-fns"
+import { id as localeID } from "date-fns/locale"
+import { useSocketNotifications } from "@/hooks/useSocketNotifications"
 import { useRef, useState } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { api, fetcher } from "@/lib/api-client"
@@ -36,6 +39,13 @@ export function MekanikHeader({ title, description }: MekanikHeaderProps) {
   // Fetch fresh profile
   const { data: profileData, mutate: mutateProfile } = useSWR(user ? "/auth/me" : null, fetcher)
   const profile = profileData?.data || profileData || user
+
+  const { data: notifications, mutate: mutateNotifications } = useSWR("/notifications", fetcher, {
+    refreshInterval: 30000
+  })
+  useSocketNotifications(mutateNotifications)
+  
+  const unreadCount = Array.isArray(notifications) ? notifications.filter((n: any) => !n.isRead).length : 0
 
   const rawPhoto = profile?.photoUrl || user?.photoUrl
   const displayPhoto = resolvePhotoUrl(rawPhoto)

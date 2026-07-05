@@ -43,11 +43,13 @@ const statusConfig: Record<InvoiceStatus, {
   variant: 'default' | 'secondary' | 'destructive' | 'outline'
   className?: string
 }> = {
-  draft: { label: 'Draft', variant: 'outline' },
-  unpaid: { label: 'Belum Bayar', variant: 'destructive' },
-  partial: { label: 'Sebagian', variant: 'secondary', className: 'bg-orange-500 text-white' },
-  paid: { label: 'Lunas', variant: 'default', className: 'bg-green-500' },
-  cancelled: { label: 'Dibatalkan', variant: 'destructive' },
+  DRAFT: { label: 'Draft', variant: 'outline' },
+  SENT: { label: 'Dikirim', variant: 'outline' },
+  PARTIAL: { label: 'Sebagian', variant: 'secondary', className: 'bg-orange-500 text-white' },
+  PAID: { label: 'Lunas', variant: 'default', className: 'bg-green-500' },
+  CANCELLED: { label: 'Dibatalkan', variant: 'destructive' },
+  OVERDUE: { label: 'Jatuh Tempo', variant: 'destructive' },
+  REFUNDED: { label: 'Dikembalikan', variant: 'outline' },
 }
 
 export default function InvoiceDetailPage({ params }: PageProps) {
@@ -87,10 +89,10 @@ export default function InvoiceDetailPage({ params }: PageProps) {
     )
   }
 
-  const status = statusConfig[invoice.status]
-  const paymentProgress = invoice.grand_total > 0 
-    ? (invoice.jumlah_dibayar / invoice.grand_total) * 100 
-    : 0
+  const status = statusConfig[invoice.status] || { label: 'Unknown', variant: 'outline' }
+  const gt = Number((invoice as any).grand_total ?? (invoice as any).grandTotal ?? 0);
+  const paid = Number((invoice as any).jumlah_dibayar ?? (invoice as any).amountPaid ?? 0);
+  const paymentProgress = gt > 0 ? (paid / gt) * 100 : 0
 
   return (
     <div className="space-y-6">
@@ -112,7 +114,7 @@ export default function InvoiceDetailPage({ params }: PageProps) {
         </div>
 
         <div className="flex gap-2">
-          {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
+          {invoice.status !== ('PAID' as any) && invoice.status !== ('CANCELLED' as any) && (
             <Button asChild>
               <Link href={`/admin/invoices/${id}/pay`}>
                 <CreditCard className="mr-2 h-4 w-4" />
@@ -181,7 +183,7 @@ export default function InvoiceDetailPage({ params }: PageProps) {
               <div>
                 <div className="text-sm text-muted-foreground">Tanggal Invoice</div>
                 <div className="font-medium">
-                  {format(new Date(invoice.tanggal), 'dd MMMM yyyy', { locale: idLocale })}
+                  {format(new Date((invoice as any).tanggal || (invoice as any).createdAt || new Date()), 'dd MMMM yyyy', { locale: idLocale })}
                 </div>
               </div>
             </div>
@@ -191,7 +193,7 @@ export default function InvoiceDetailPage({ params }: PageProps) {
                 <div>
                   <div className="text-sm text-muted-foreground">Jatuh Tempo</div>
                   <div className="font-medium">
-                    {format(new Date(invoice.jatuh_tempo), 'dd MMMM yyyy', { locale: idLocale })}
+                    {format(new Date((invoice as any).jatuh_tempo || (invoice as any).dueDate || new Date()), 'dd MMMM yyyy', { locale: idLocale })}
                   </div>
                 </div>
               </div>
@@ -216,18 +218,18 @@ export default function InvoiceDetailPage({ params }: PageProps) {
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total</span>
-                <span className="font-medium">{formatCurrency(invoice.grand_total)}</span>
+                <span className="font-medium">{formatCurrency(Number((invoice as any).grand_total ?? (invoice as any).grandTotal ?? 0))}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Dibayar</span>
                 <span className="font-medium text-green-600">
-                  {formatCurrency(invoice.jumlah_dibayar)}
+                  {formatCurrency(Number((invoice as any).jumlah_dibayar ?? (invoice as any).amountPaid ?? 0))}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Sisa</span>
                 <span className="font-bold text-lg">
-                  {formatCurrency(invoice.sisa_bayar)}
+                  {formatCurrency(Number((invoice as any).sisa_bayar ?? (invoice as any).amountDue ?? 0))}
                 </span>
               </div>
             </div>
@@ -258,45 +260,45 @@ export default function InvoiceDetailPage({ params }: PageProps) {
                     <TableCell>{index + 1}</TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{item.nama_item}</div>
+                        <div className="font-medium">{(item as any).nama_item ?? (item as any).service?.name ?? (item as any).sparepart?.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {item.tipe === 'jasa' ? 'Jasa' : 'Sparepart'}
+                          {(item as any).tipe === 'jasa' || (item as any).service ? 'Jasa' : 'Sparepart'}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-center">{item.quantity}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(item.harga_satuan)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(item.subtotal)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(Number((item as any).harga_satuan ?? (item as any).price ?? 0))}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(Number((item as any).subtotal ?? (item as any).totalPrice ?? 0))}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
               <TableFooter>
                 <TableRow>
                   <TableCell colSpan={4} className="text-right">Subtotal Jasa</TableCell>
-                  <TableCell className="text-right">{formatCurrency(invoice.total_jasa)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(Number((invoice as any).total_jasa ?? 0))}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell colSpan={4} className="text-right">Subtotal Sparepart</TableCell>
-                  <TableCell className="text-right">{formatCurrency(invoice.total_sparepart)}</TableCell>
+                  <TableCell className="text-right">{formatCurrency(Number((invoice as any).total_sparepart ?? 0))}</TableCell>
                 </TableRow>
-                {invoice.diskon > 0 && (
+                {((invoice as any).diskon || (invoice as any).discountAmount) > 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-right">Diskon</TableCell>
                     <TableCell className="text-right text-destructive">
-                      -{formatCurrency(invoice.diskon)}
+                      -{formatCurrency(Number((invoice as any).diskon ?? (invoice as any).discountAmount ?? 0))}
                     </TableCell>
                   </TableRow>
                 )}
-                {invoice.ppn > 0 && (
+                {((invoice as any).ppn || (invoice as any).taxAmount) > 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-right">PPN (11%)</TableCell>
-                    <TableCell className="text-right">{formatCurrency(invoice.ppn)}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(Number((invoice as any).ppn ?? (invoice as any).taxAmount ?? 0))}</TableCell>
                   </TableRow>
                 )}
                 <TableRow className="bg-muted/50">
                   <TableCell colSpan={4} className="text-right font-bold text-lg">Grand Total</TableCell>
                   <TableCell className="text-right font-bold text-lg">
-                    {formatCurrency(invoice.grand_total)}
+                    {formatCurrency(Number((invoice as any).grand_total ?? (invoice as any).grandTotal ?? 0))}
                   </TableCell>
                 </TableRow>
               </TableFooter>
@@ -326,12 +328,12 @@ export default function InvoiceDetailPage({ params }: PageProps) {
                   {invoice.payments.map((payment) => (
                     <TableRow key={payment.id}>
                       <TableCell>
-                        {format(new Date(payment.tanggal), 'dd MMM yyyy HH:mm', { locale: idLocale })}
+                        {format(new Date((payment as any).tanggal || (payment as any).paymentDate || new Date()), 'dd MMM yyyy HH:mm', { locale: idLocale })}
                       </TableCell>
-                      <TableCell className="capitalize">{payment.metode}</TableCell>
-                      <TableCell>{payment.referensi || '-'}</TableCell>
+                      <TableCell className="capitalize">{(payment as any).metode || (payment as any).paymentMethod}</TableCell>
+                      <TableCell>{(payment as any).referensi || (payment as any).referenceNumber || '-'}</TableCell>
                       <TableCell className="text-right font-medium text-green-600">
-                        {formatCurrency(payment.jumlah)}
+                        {formatCurrency(Number((payment as any).jumlah ?? (payment as any).amount ?? 0))}
                       </TableCell>
                     </TableRow>
                   ))}

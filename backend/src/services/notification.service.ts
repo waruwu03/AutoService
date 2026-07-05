@@ -1,6 +1,7 @@
 import { prisma } from '../config/database.config';
 import { NotificationType } from '@prisma/client';
 import { notificationQueue } from '../config/bull.config';
+import { getIO } from '../config/socket.config';
 
 export class NotificationService {
   async createNotification(data: {
@@ -22,8 +23,19 @@ export class NotificationService {
       },
     });
 
-    // If it's a high priority notification, we could also queue it for real-time delivery (e.g. Socket.io or Push)
-    // For now, we utilize the Bull queue for background processing if needed
+    // Emit real-time notification via Socket.io
+    try {
+      const io = getIO();
+      if (data.userId) {
+        io.to(`user_${data.userId}`).emit('notification', notification);
+      } else {
+        io.emit('notification', notification);
+      }
+    } catch (err) {
+      console.warn("Socket.io emit failed:", err);
+    }
+
+    // If it's a high priority notification, we could also queue it for background processing
     if (data.type === NotificationType.LOW_STOCK || data.type === NotificationType.SERVICE_REMINDER) {
       await notificationQueue.add('send-realtime-notification', {
         notificationId: notification.id,

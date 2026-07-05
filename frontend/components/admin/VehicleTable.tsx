@@ -46,7 +46,7 @@ import type { Vehicle } from '@/types'
 interface VehicleTableProps {
   data: Vehicle[]
   isLoading: boolean
-  onDelete: (id: number) => void
+  onDelete: (id: string) => void
   isDeleting?: boolean
 }
 
@@ -63,7 +63,7 @@ const bahanBakarLabels = {
 }
 
 export function VehicleTable({ data, isLoading, onDelete, isDeleting }: VehicleTableProps) {
-  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const handleDelete = () => {
     if (deleteId) {
@@ -140,17 +140,17 @@ export function VehicleTable({ data, isLoading, onDelete, isDeleting }: VehicleT
                   <TableCell>
                     <Badge variant="outline">
                       <Settings2 className="mr-1 h-3 w-3" />
-                      {transmisiLabels[vehicle.transmisi]}
+                      {transmisiLabels[vehicle.transmisi as keyof typeof transmisiLabels]}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary">
                       <Fuel className="mr-1 h-3 w-3" />
-                      {bahanBakarLabels[vehicle.bahan_bakar]}
+                      {bahanBakarLabels[vehicle.bahan_bakar as keyof typeof bahanBakarLabels]}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {format(new Date(vehicle.created_at), 'dd MMM yyyy', { locale: id })}
+                    {format(new Date((vehicle as any).created_at || (vehicle as any).createdAt || new Date()), 'dd MMM yyyy', { locale: id })}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
