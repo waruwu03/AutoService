@@ -31,6 +31,21 @@ router.use(authMiddleware);
  *       403:
  *         description: Forbidden - Hanya Admin
  */
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+
+// Setup multer for JSON file upload (store temporarily in storage/uploads)
+const tempUploadDir = path.join(process.cwd(), 'storage', 'uploads');
+if (!fs.existsSync(tempUploadDir)) {
+  fs.mkdirSync(tempUploadDir, { recursive: true });
+}
+const upload = multer({ dest: tempUploadDir });
+
 router.get('/export', roleMiddleware('ADMIN', 'PIMPINAN'), backupController.exportBackup);
+
+router.get('/local', roleMiddleware('ADMIN', 'PIMPINAN'), backupController.getLocalBackups);
+
+router.post('/restore', roleMiddleware('ADMIN', 'PIMPINAN'), upload.single('backupFile'), backupController.restoreBackup);
 
 export default router;

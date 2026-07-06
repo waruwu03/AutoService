@@ -99,17 +99,21 @@ app.use(process.env.API_PREFIX || '/api/v1', routes);
 // Error Handling
 app.use(errorMiddleware);
 
+import { cronService } from './services/cron.service';
+
 // Initialize application
 const startServer = async () => {
   try {
     const httpServer = createServer(app);
     initializeSocket(httpServer);
+    cronService.start();
 
     httpServer.listen(port, () => {
       console.log(`
 🚀 Server ready at: http://localhost:${port}
 📖 Swagger UI: http://localhost:${port}/api-docs
 🔌 WebSockets Enabled
+🕒 Auto-Backup Cron Service Started
       `);
     });
   } catch (error) {

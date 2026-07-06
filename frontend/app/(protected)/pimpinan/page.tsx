@@ -16,6 +16,7 @@ import {
   Eye,
   CheckCircle,
   AlertCircle,
+  AlertTriangle,
   ArrowUpRight,
   BarChart3,
   PieChart as PieChartIcon,
@@ -111,12 +112,15 @@ export default function PimpinanPage() {
   const startDate = `${y}-${m}-01`
   const endDate = `${y}-${m}-${String(lastDay).padStart(2, "0")}`
 
-  const { data: dashRaw, isLoading } = useSWR(
+  const { data: dashRaw, isLoading: isDashLoading } = useSWR(
     `/reports/dashboard?startDate=${startDate}&endDate=${endDate}`,
     fetcher
   )
   const { data: recentWO } = useSWR("/work-orders?limit=5&sortBy=createdAt&sortOrder=desc", fetcher)
   const { data: mechanicsRaw } = useSWR(`/reports/mechanics?startDate=${startDate}&endDate=${endDate}`, fetcher)
+  
+  // Fetch data inventory untuk Total Item dan Total Nilai Stok
+  const { data: invRaw, isLoading: isInvLoading } = useSWR("/inventory/spareparts?limit=500", fetcher)
 
   const dash = dashRaw?.data || dashRaw || {}
   const [isExporting, setIsExporting] = React.useState(false)
@@ -147,20 +151,37 @@ export default function PimpinanPage() {
 
   const recentTransactions: any[] = Array.isArray(recentWO?.data) ? recentWO.data : []
   const mechanicPerformance: any[] = Array.isArray(mechanicsRaw) ? mechanicsRaw : []
+  const invItems: any[] = Array.isArray(invRaw?.data) ? invRaw.data : []
 
   const totalRevenue = Number(dash.totalRevenue || dash.monthlyRevenue || 0)
   const completedOrders = Number(dash.completedOrders || dash.totalCompleted || 0)
   const activeOrders = Number(dash.activeWorkOrders || 0)
-  const lowStock = Number(dash.lowStockCount || 0)
   const pendingInvoices = Number(dash.pendingInvoices || 0)
   const avgRating = Number(dash.avgRating || 4.8)
+
+  let kritisCount = 0
+  let menipisCount = 0
+  invItems.forEach(item => {
+    const stock = item.stockQuantity ?? item.stok ?? 0
+    const min = item.minStock ?? item.stok_minimum ?? 5
+    if (stock <= 0) kritisCount++
+    else if (stock <= min) menipisCount++
+  })
+
+  const totalItem = invItems.length
+  const totalNilaiStok = invItems.reduce((sum, i) => sum + Number(i.sellPrice ?? 0) * (i.stockQuantity ?? i.stok ?? 0), 0)
+
+  const isLoading = isDashLoading || isInvLoading
 
   const kpiData = [
     { title: "Pendapatan Bulan Ini", value: isLoading ? "..." : `Rp ${(totalRevenue / 1_000_000).toFixed(1)}jt`, changeType: "positive" as const, icon: DollarSign, color: "bg-blue-500" },
     { title: "SPK Aktif", value: isLoading ? "..." : activeOrders.toString(), changeType: "positive" as const, icon: FileText, color: "bg-emerald-500" },
     { title: "Invoice Pending", value: isLoading ? "..." : pendingInvoices.toString(), changeType: "negative" as const, icon: Clock, color: "bg-amber-500" },
-    { title: "Stok Menipis", value: isLoading ? "..." : lowStock.toString(), changeType: "negative" as const, icon: AlertCircle, color: "bg-red-500" },
     { title: "Rating Bengkel", value: isLoading ? "..." : avgRating.toFixed(1), changeType: "positive" as const, icon: Star, color: "bg-purple-500" },
+    { title: "Total Item", value: isLoading ? "..." : totalItem.toString(), changeType: "positive" as const, icon: Printer, color: "bg-indigo-500" },
+    { title: "Total Nilai Stok", value: isLoading ? "..." : `Rp ${(totalNilaiStok / 1_000_000).toFixed(1)}jt`, changeType: "positive" as const, icon: TrendingUp, color: "bg-teal-500" },
+    { title: "Stok Kritis", value: isLoading ? "..." : kritisCount.toString(), changeType: "negative" as const, icon: AlertCircle, color: "bg-red-500" },
+    { title: "Stok Menipis", value: isLoading ? "..." : menipisCount.toString(), changeType: "negative" as const, icon: AlertTriangle, color: "bg-orange-500" },
   ]
 
   const revenueChartData = Array.isArray(dash.monthlyRevenueStats) ? dash.monthlyRevenueStats : [
@@ -238,7 +259,7 @@ export default function PimpinanPage() {
         </Card>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-4">
           {kpiData.map((kpi) => (
             <Card key={kpi.title} className="border-none shadow-sm hover:shadow-md transition-all bg-card">
               <CardContent className="p-5">
@@ -450,12 +471,8 @@ export default function PimpinanPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Realtime Stock Widget */}
-        <div className="mt-8 pt-8 border-t border-slate-200 dark:border-white/10">
-          <RealtimeStockWidget />
-        </div>
       </div>
     </>
   )
 }
+

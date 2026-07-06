@@ -58,6 +58,9 @@ export default function AdminDashboard() {
   const { data: lowStockData, isLoading: isLowStockLoading } = useSWR('/inventory/spareparts/low-stock', fetcher)
   const { data: mechanicsData, isLoading: isMechanicsLoading } = useSWR('/reports/mechanics?startDate=2024-01-01&endDate=2025-12-31', fetcher)
   const { data: revenueTimeSeries, isLoading: isRevenueLoading } = useSWR('/reports/revenue-timeseries', fetcher)
+  
+  // Fetch data inventory untuk Total Item dan Total Nilai Stok
+  const { data: invRaw, isLoading: isInvLoading } = useSWR("/inventory/spareparts?limit=500", fetcher)
 
   const chartData = revenueTimeSeries || []
 
@@ -80,6 +83,19 @@ export default function AdminDashboard() {
   const recentOrders = recentOrdersData?.data || []
   const topMechanics = mechanicsData ? mechanicsData.slice(0, 3) : []
   const lowStockItems = Array.isArray(lowStockData) ? lowStockData.slice(0, 5) : []
+  
+  const invItems: any[] = Array.isArray(invRaw?.data) ? invRaw.data : []
+  const totalItem = invItems.length
+  const totalNilaiStok = invItems.reduce((sum, i) => sum + Number(i.sellPrice ?? 0) * (i.stockQuantity ?? i.stok ?? 0), 0)
+
+  let kritisCount = 0
+  let menipisCount = 0
+  invItems.forEach(item => {
+    const stock = item.stockQuantity ?? item.stok ?? 0
+    const min = item.minStock ?? item.stok_minimum ?? 5
+    if (stock <= 0) kritisCount++
+    else if (stock <= min) menipisCount++
+  })
 
   return (
     <>
@@ -89,7 +105,7 @@ export default function AdminDashboard() {
         <div className="mx-auto max-w-7xl space-y-8">
           
           {/* Stats Grid - Premium Cards */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
             <PremiumStatCard
               title="Total Order"
               value={isDashboardLoading ? "..." : stats.todayWorkOrders}
@@ -127,6 +143,36 @@ export default function AdminDashboard() {
               description="Database aktif"
               icon={Users}
               colorTheme="purple"
+            />
+            <PremiumStatCard
+              title="Total Item"
+              value={isInvLoading ? "..." : totalItem.toString()}
+              description="Jenis sparepart"
+              icon={Package}
+              colorTheme="blue"
+            />
+            <PremiumStatCard
+              title="Nilai Stok"
+              value={isInvLoading ? "..." : `Rp ${(totalNilaiStok / 1_000_000).toFixed(1)}jt`}
+              description="Aset gudang"
+              icon={TrendingUp}
+              colorTheme="emerald"
+            />
+            <PremiumStatCard
+              title="Stok Kritis"
+              value={isInvLoading ? "..." : kritisCount.toString()}
+              description={kritisCount > 0 ? "Segera restock!" : "Semua aman"}
+              icon={AlertTriangle}
+              colorTheme="red"
+              criticalAlert={kritisCount > 0}
+            />
+            <PremiumStatCard
+              title="Stok Menipis"
+              value={isInvLoading ? "..." : menipisCount.toString()}
+              description="Di bawah batas minimum"
+              icon={AlertTriangle}
+              colorTheme="amber"
+              criticalAlert={menipisCount > 0}
             />
           </div>
 
@@ -389,11 +435,6 @@ export default function AdminDashboard() {
               </div>
 
             </div>
-          </div>
-
-          {/* Realtime Stock Widget */}
-          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-white/10">
-            <RealtimeStockWidget />
           </div>
         </div>
       </div>

@@ -14,6 +14,8 @@ import {
   Download,
   Shield,
   AlertTriangle,
+  UploadCloud,
+  Clock,
 } from "lucide-react"
 
 import useSWR from "swr"
@@ -62,6 +64,11 @@ export default function SettingsPage() {
   })
   const [isSaving, setIsSaving] = React.useState(false)
   const [isBackingUp, setIsBackingUp] = React.useState(false)
+  const [isRestoring, setIsRestoring] = React.useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  const { data: localBackupsData, mutate: mutateLocalBackups } = useSWR("/backup/local", fetcher)
+  const localBackups = localBackupsData?.data || []
 
   const users = usersData?.data || []
 
@@ -201,11 +208,56 @@ export default function SettingsPage() {
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
       toast.success("Backup berhasil diunduh! Simpan file ini di tempat yang aman.")
+      mutateLocalBackups()
     } catch (error) {
       console.error(error)
       toast.error("Gagal membuat backup. Periksa koneksi dan coba lagi.")
     } finally {
       setIsBackingUp(false)
+    }
+  }
+
+  const handleRestoreFromFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    if (!confirm('PERINGATAN BAHAYA: Memulihkan database akan MENGHAPUS & MENIMPA seluruh data saat ini! Pastikan file backup valid. Apakah Anda yakin ingin melanjutkan?')) {
+       e.target.value = ''
+       return
+    }
+
+    const formData = new FormData()
+    formData.append('backupFile', file)
+
+    setIsRestoring(true)
+    try {
+      await api.post('/backup/restore', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      toast.success('Database berhasil dipulihkan dari file. Halaman akan dimuat ulang...')
+      setTimeout(() => window.location.reload(), 2000)
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Gagal memulihkan database')
+    } finally {
+      setIsRestoring(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleRestoreFromLocal = async (filename: string) => {
+    if (!confirm(`PERINGATAN BAHAYA: Memulihkan dari backup otomatis (${filename}) akan MENGHAPUS & MENIMPA seluruh data saat ini! Apakah Anda yakin?`)) {
+       return
+    }
+
+    setIsRestoring(true)
+    try {
+      await api.post('/backup/restore', { filename })
+      toast.success('Database berhasil dipulihkan dari backup otomatis. Halaman akan dimuat ulang...')
+      setTimeout(() => window.location.reload(), 2000)
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Gagal memulihkan database')
+    } finally {
+      setIsRestoring(false)
     }
   }
 
@@ -515,6 +567,73 @@ export default function SettingsPage() {
                       <><Download className="size-4" />Unduh Backup Sekarang</>
                     )}
                   </Button>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4 pt-2">
+                  <h4 className="text-sm font-semibold flex items-center gap-2 text-destructive">
+                    <RotateCcw className="size-4" />
+                    Restore Database (Pemulihan)
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Pulihkan database dari file backup yang telah diunduh, atau gunakan backup otomatis harian yang disimpan di server. <b>Tindakan ini akan menimpa seluruh data saat ini!</b>
+                  </p>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {/* Manual Restore */}
+                    <div className="rounded-lg border p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <UploadCloud className="size-4 text-muted-foreground" />
+                        <h5 className="font-medium text-sm">Upload File Backup</h5>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Unggah file <code className="bg-muted px-1 rounded">.json</code> dari komputer Anda.</p>
+                      
+                      <input 
+                        type="file" 
+                        accept=".json" 
+                        className="hidden" 
+                        ref={fileInputRef} 
+                        onChange={handleRestoreFromFile} 
+                      />
+                      <Button 
+                        variant="outline" 
+                        className="w-full" 
+                        disabled={isRestoring}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {isRestoring ? <Loader2 className="size-4 animate-spin mr-2" /> : "Pilih File Backup..."}
+                      </Button>
+                    </div>
+
+                    {/* Auto-Backup Restore */}
+                    <div className="rounded-lg border p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Clock className="size-4 text-muted-foreground" />
+                        <h5 className="font-medium text-sm">Auto-Backup Server</h5>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Pulihkan dari backup otomatis yang disimpan server.</p>
+                      
+                      {localBackups.length > 0 ? (
+                        <Select onValueChange={handleRestoreFromLocal} disabled={isRestoring}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pilih file backup otomatis" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {localBackups.map((b: any) => (
+                              <SelectItem key={b.filename} value={b.filename}>
+                                {new Date(b.createdAt).toLocaleString('id-ID')} - {(b.size / 1024).toFixed(1)} KB
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="text-xs text-muted-foreground p-2 border border-dashed rounded text-center">
+                          Belum ada file auto-backup di server.
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <Separator />
