@@ -1,4 +1,3 @@
-import { Settings, Wrench } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface LogoProps {
@@ -21,16 +20,11 @@ export function Logo({
   return (
     <div className={cn("flex items-center gap-3", className)}>
       <div className="relative flex items-center justify-center shrink-0">
-        <Settings
-          size={iconSize}
-          className={cn(isWhite ? "text-white/80" : "text-primary", "animate-spin-slow")}
-        />
-        <Wrench
-          size={iconSize * 0.55}
-          className={cn(
-            "absolute -rotate-45",
-            isWhite ? "text-white" : "text-white"
-          )}
+        <img 
+          src="/Logo1.png" 
+          alt="Logo" 
+          className="object-contain"
+          style={{ width: iconSize * 1.4, height: iconSize * 1.4 }}
         />
       </div>
       <div className="flex flex-col group-data-[collapsible=icon]:hidden overflow-hidden select-none">
