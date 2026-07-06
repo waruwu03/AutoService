@@ -24,23 +24,6 @@ export const metadata: Metadata = {
   },
   description: 'Sistem Manajemen Bengkel Mobil - Kelola SPK, Invoice, Sparepart, dan Laporan',
   keywords: ['bengkel', 'servis mobil', 'spk', 'invoice', 'sparepart', 'manajemen bengkel'],
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
 }
 
 export const viewport: Viewport = {
