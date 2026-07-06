@@ -59,7 +59,14 @@ export default function AdminDashboard() {
 
   const chartData = revenueTimeSeries || []
 
-  const stats = dashboardData || {
+  const stats = dashboardData ? {
+    todayWorkOrders: dashboardData.completedOrders || 0,
+    activeWorkOrders: dashboardData.activeWorkOrders || 0,
+    monthlyRevenue: dashboardData.totalRevenue || 0,
+    totalCustomers: dashboardData.totalCustomers || 0,
+    lowStockCount: dashboardData.lowStockCount || 0,
+    pendingInvoices: dashboardData.pendingInvoices || 0
+  } : {
     todayWorkOrders: 0,
     activeWorkOrders: 0,
     monthlyRevenue: 0,

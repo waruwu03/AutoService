@@ -115,7 +115,7 @@ export default function DashboardPage() {
     { title: "Mekanik Aktif", value: isLoading ? "..." : activeMechanics.toString(), change: "0", changeType: "neutral" as const, subtext: "on duty", icon: Users, color: "bg-slate-500" },
   ]
 
-  const revenueChartData = Array.isArray(dash.monthlyRevenue) ? dash.monthlyRevenue : [
+  const revenueChartData = Array.isArray(dash.monthlyRevenueStats || dash.monthlyRevenue) ? (dash.monthlyRevenueStats || dash.monthlyRevenue) : [
     { month: "Jan", target: 100, realisasi: 0 },
     { month: "Feb", target: 100, realisasi: 0 },
     { month: "Mar", target: 110, realisasi: 0 },
