@@ -69,8 +69,8 @@ export default function SettingsPage() {
   const { data: settingsData, mutate: mutateSettings } = useSWR('/settings', fetcher);
   const settings = settingsData?.data || settingsData || [];
 
-  const getSetting = (key, defaultValue) => {
-    const s = settings.find(s => s.key === key);
+  const getSetting = (key: string, defaultValue: any) => {
+    const s = settings.find((s: any) => s.key === key);
     if (!s) return defaultValue;
     if (typeof defaultValue === 'boolean') return s.value === 'true';
     if (typeof defaultValue === 'number') return Number(s.value);
@@ -171,7 +171,7 @@ export default function SettingsPage() {
       setHasChanges(false);
       toast.success('Pengaturan berhasil disimpan');
       mutateSettings();
-    } catch (e) {
+    } catch (e: any) {
       toast.error(e?.response?.data?.message || 'Gagal menyimpan pengaturan');
     } finally {
       setIsSavingSettings(false);
@@ -293,14 +293,14 @@ export default function SettingsPage() {
               <CardHeader><CardTitle>Informasi Bengkel</CardTitle><CardDescription>Data dasar bengkel yang ditampilkan di invoice dan dokumen</CardDescription></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2"><Label htmlFor="workshop-name">Nama Bengkel</Label><Input id="workshop-name" value={general.name} onChange={(e) => { setGeneral({...general, name: e.target.value}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /></div>
-                  <div className="space-y-2"><Label htmlFor="workshop-code">Kode Bengkel</Label><Input id="workshop-code" value={general.code} onChange={(e) => { setGeneral({...general, code: e.target.value}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /></div>
+                  <div className="space-y-2"><Label htmlFor="workshop-name">Nama Bengkel</Label><Input id="workshop-name" value={general.name} onChange={(e) => { setGeneral({...general, name: e.target.value}); setHasChanges(true); }} /></div>
+                  <div className="space-y-2"><Label htmlFor="workshop-code">Kode Bengkel</Label><Input id="workshop-code" value={general.code} onChange={(e) => { setGeneral({...general, code: e.target.value}); setHasChanges(true); }} /></div>
                 </div>
-                <div className="space-y-2"><Label htmlFor="address">Alamat</Label><Textarea id="address" value={general.address} onChange={(e) => { setGeneral({...general, address: e.target.value}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /></div>
+                <div className="space-y-2"><Label htmlFor="address">Alamat</Label><Textarea id="address" value={general.address} onChange={(e) => { setGeneral({...general, address: e.target.value}); setHasChanges(true); }} /></div>
                 <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="space-y-2"><Label htmlFor="phone">Telepon</Label><Input id="phone" value={general.phone} onChange={(e) => { setGeneral({...general, phone: e.target.value}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /></div>
-                  <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={general.email} onChange={(e) => { setGeneral({...general, email: e.target.value}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /></div>
-                  <div className="space-y-2"><Label htmlFor="npwp">NPWP</Label><Input id="npwp" value={general.npwp} onChange={(e) => { setGeneral({...general, npwp: e.target.value}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /></div>
+                  <div className="space-y-2"><Label htmlFor="phone">Telepon</Label><Input id="phone" value={general.phone} onChange={(e) => { setGeneral({...general, phone: e.target.value}); setHasChanges(true); }} /></div>
+                  <div className="space-y-2"><Label htmlFor="email">Email</Label><Input id="email" type="email" value={general.email} onChange={(e) => { setGeneral({...general, email: e.target.value}); setHasChanges(true); }} /></div>
+                  <div className="space-y-2"><Label htmlFor="npwp">NPWP</Label><Input id="npwp" value={general.npwp} onChange={(e) => { setGeneral({...general, npwp: e.target.value}); setHasChanges(true); }} /></div>
                 </div>
               </CardContent>
             </Card>
@@ -309,8 +309,8 @@ export default function SettingsPage() {
               <CardHeader><CardTitle>Jam Operasional</CardTitle><CardDescription>Atur jam buka dan tutup bengkel</CardDescription></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2"><Label htmlFor="open-time">Jam Buka</Label><Input id="open-time" type="time" value={general.openTime} onChange={(e) => { setGeneral({...general, openTime: e.target.value}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /></div>
-                  <div className="space-y-2"><Label htmlFor="close-time">Jam Tutup</Label><Input id="close-time" type="time" value={general.closeTime} onChange={(e) => { setGeneral({...general, closeTime: e.target.value}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /></div>
+                  <div className="space-y-2"><Label htmlFor="open-time">Jam Buka</Label><Input id="open-time" type="time" value={general.openTime} onChange={(e) => { setGeneral({...general, openTime: e.target.value}); setHasChanges(true); }} /></div>
+                  <div className="space-y-2"><Label htmlFor="close-time">Jam Tutup</Label><Input id="close-time" type="time" value={general.closeTime} onChange={(e) => { setGeneral({...general, closeTime: e.target.value}); setHasChanges(true); }} /></div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5"><Label>Buka di Hari Sabtu</Label><p className="text-sm text-muted-foreground">Terima booking dan servis di hari Sabtu</p></div>
@@ -340,7 +340,7 @@ export default function SettingsPage() {
                     {index > 0 && <Separator />}
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5"><Label>{item.label}</Label><p className="text-sm text-muted-foreground">{item.desc}</p></div>
-                      <Switch defaultChecked={item.defaultChecked} onChange={() => setHasChanges(true)} />
+                      <Switch defaultChecked={item.defaultChecked} onCheckedChange={() => setHasChanges(true)} />
                     </div>
                   </React.Fragment>
                 ))}
@@ -361,13 +361,13 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                   <Label>Batas Nilai Tanpa Approval</Label>
                   <p className="text-sm text-muted-foreground">SPK di bawah nilai ini tidak perlu approval</p>
-                  <div className="flex items-center gap-2"><span className="text-sm text-muted-foreground">Rp</span><Input type="number" value={workflow.noApprovalLimit} onChange={(e) => { setWorkflow({...workflow, noApprovalLimit: Number(e.target.value)}); setHasChanges(true); }} className="w-40" onChange={() => setHasChanges(true)} /></div>
+                  <div className="flex items-center gap-2"><span className="text-sm text-muted-foreground">Rp</span><Input type="number" value={workflow.noApprovalLimit} onChange={(e) => { setWorkflow({...workflow, noApprovalLimit: Number(e.target.value)}); setHasChanges(true); }} className="w-40" /></div>
                 </div>
                 <Separator />
                 <div className="space-y-2">
                   <Label>Batas Diskon Tanpa Approval</Label>
                   <p className="text-sm text-muted-foreground">Persentase diskon maksimal yang bisa diberikan tanpa approval</p>
-                  <div className="flex items-center gap-2"><Input type="number" value={workflow.noApprovalDiscount} onChange={(e) => { setWorkflow({...workflow, noApprovalDiscount: Number(e.target.value)}); setHasChanges(true); }} className="w-20" onChange={() => setHasChanges(true)} /><span className="text-sm text-muted-foreground">%</span></div>
+                  <div className="flex items-center gap-2"><Input type="number" value={workflow.noApprovalDiscount} onChange={(e) => { setWorkflow({...workflow, noApprovalDiscount: Number(e.target.value)}); setHasChanges(true); }} className="w-20" /><span className="text-sm text-muted-foreground">%</span></div>
                 </div>
               </CardContent>
             </Card>
@@ -376,8 +376,8 @@ export default function SettingsPage() {
               <CardHeader><CardTitle>Penomoran Otomatis</CardTitle><CardDescription>Format dan prefix untuk dokumen</CardDescription></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2"><Label htmlFor="spk-prefix">Prefix SPK</Label><Input id="spk-prefix" value={workflow.spkPrefix} onChange={(e) => { setWorkflow({...workflow, spkPrefix: e.target.value}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /></div>
-                  <div className="space-y-2"><Label htmlFor="inv-prefix">Prefix Invoice</Label><Input id="inv-prefix" value={workflow.invPrefix} onChange={(e) => { setWorkflow({...workflow, invPrefix: e.target.value}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /></div>
+                  <div className="space-y-2"><Label htmlFor="spk-prefix">Prefix SPK</Label><Input id="spk-prefix" value={workflow.spkPrefix} onChange={(e) => { setWorkflow({...workflow, spkPrefix: e.target.value}); setHasChanges(true); }} /></div>
+                  <div className="space-y-2"><Label htmlFor="inv-prefix">Prefix Invoice</Label><Input id="inv-prefix" value={workflow.invPrefix} onChange={(e) => { setWorkflow({...workflow, invPrefix: e.target.value}); setHasChanges(true); }} /></div>
                 </div>
                 <div className="space-y-2">
                   <Label>Format Penomoran</Label>
@@ -400,11 +400,11 @@ export default function SettingsPage() {
               <CardHeader><CardTitle>Pengaturan Harga</CardTitle><CardDescription>Markup dan margin default</CardDescription></CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2"><Label>Markup Sparepart (%)</Label><Input type="number" value={pricing.partMarkup} onChange={(e) => { setPricing({...pricing, partMarkup: Number(e.target.value)}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /><p className="text-xs text-muted-foreground">Markup default untuk harga sparepart</p></div>
-                  <div className="space-y-2"><Label>Markup Jasa (%)</Label><Input type="number" value={pricing.serviceMarkup} onChange={(e) => { setPricing({...pricing, serviceMarkup: Number(e.target.value)}); setHasChanges(true); }} onChange={() => setHasChanges(true)} /><p className="text-xs text-muted-foreground">Markup default untuk biaya jasa</p></div>
+                  <div className="space-y-2"><Label>Markup Sparepart (%)</Label><Input type="number" value={pricing.partMarkup} onChange={(e) => { setPricing({...pricing, partMarkup: Number(e.target.value)}); setHasChanges(true); }} /><p className="text-xs text-muted-foreground">Markup default untuk harga sparepart</p></div>
+                  <div className="space-y-2"><Label>Markup Jasa (%)</Label><Input type="number" value={pricing.serviceMarkup} onChange={(e) => { setPricing({...pricing, serviceMarkup: Number(e.target.value)}); setHasChanges(true); }} /><p className="text-xs text-muted-foreground">Markup default untuk biaya jasa</p></div>
                 </div>
                 <Separator />
-                <div className="space-y-2"><Label>PPN (%)</Label><Input type="number" value={pricing.taxRate} onChange={(e) => { setPricing({...pricing, taxRate: Number(e.target.value)}); setHasChanges(true); }} className="w-20" onChange={() => setHasChanges(true)} /><p className="text-xs text-muted-foreground">Persentase PPN yang dikenakan</p></div>
+                <div className="space-y-2"><Label>PPN (%)</Label><Input type="number" value={pricing.taxRate} onChange={(e) => { setPricing({...pricing, taxRate: Number(e.target.value)}); setHasChanges(true); }} className="w-20" /><p className="text-xs text-muted-foreground">Persentase PPN yang dikenakan</p></div>
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5"><Label>Tampilkan Harga Termasuk PPN</Label><p className="text-sm text-muted-foreground">Harga yang ditampilkan sudah termasuk PPN</p></div>
                   <Switch checked={pricing.showTaxIncluded} onCheckedChange={(val) => { setPricing({...pricing, showTaxIncluded: val}); setHasChanges(true); }} />
