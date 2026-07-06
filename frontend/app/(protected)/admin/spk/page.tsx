@@ -42,7 +42,7 @@ const formatDate = (date: string | Date | number) => {
 import type { SPK, SPKStatus } from "@/types"
 import useSWR from "swr"
 import { fetcher, api } from "@/lib/api-client"
-import { Loader2, Plus, Search, MoreHorizontal, Eye, Play, CheckCircle, XCircle } from "lucide-react"
+import { Loader2, Plus, Search, MoreHorizontal, Eye, Play, CheckCircle, XCircle, FileText, Clock, Wrench } from "lucide-react"
 
 const statusConfig: Record<SPKStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   DRAFT: { label: "Draft", variant: "secondary" },
