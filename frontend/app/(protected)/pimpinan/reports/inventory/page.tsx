@@ -101,9 +101,9 @@ export default function InventoryReportPage() {
   
   const stockMovement = React.useMemo(() => {
     if (!movRaw?.data?.data) return [];
-    const grouped = {};
+    const grouped: Record<string, { month: string; masuk: number; keluar: number }> = {};
     const movements = movRaw.data.data;
-    movements.forEach(m => {
+    movements.forEach((m: any) => {
       const date = new Date(m.createdAt);
       const month = date.toLocaleString('id-ID', { month: 'short' });
       if (!grouped[month]) grouped[month] = { month, masuk: 0, keluar: 0 };

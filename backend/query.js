@@ -1,0 +1,1 @@
+﻿const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); async function main() { const data = await prisma.workOrder.findUnique({ where: { orderNumber: 'SPK-202607-0001' }, include: { invoices: true } }); console.log(JSON.stringify(data, null, 2)); } main().catch(console.error).finally(() => prisma.disconnect());
