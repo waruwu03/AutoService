@@ -10,10 +10,15 @@ import {
   Save,
   RotateCcw,
   Loader2,
+  Database,
+  Download,
+  Shield,
+  AlertTriangle,
 } from "lucide-react"
 
 import useSWR from "swr"
 import { api, fetcher } from "@/lib/api-client"
+import { getAccessToken } from "@/lib/storage"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -56,6 +61,7 @@ export default function SettingsPage() {
     phone: "",
   })
   const [isSaving, setIsSaving] = React.useState(false)
+  const [isBackingUp, setIsBackingUp] = React.useState(false)
 
   const users = usersData?.data || []
 
@@ -172,6 +178,37 @@ export default function SettingsPage() {
     }
   };
 
+  const handleBackup = async () => {
+    setIsBackingUp(true)
+    try {
+      const token = getAccessToken() || ''
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api/v1'
+      const response = await fetch(`${baseUrl}/backup/export`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      const contentDisposition = response.headers.get('Content-Disposition') || ''
+      const filenameMatch = contentDisposition.match(/filename="(.+)"/)
+      const filename = filenameMatch ? filenameMatch[1] : `autoservice-backup-${new Date().toISOString().slice(0, 10)}.json`
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      toast.success("Backup berhasil diunduh! Simpan file ini di tempat yang aman.")
+    } catch (error) {
+      console.error(error)
+      toast.error("Gagal membuat backup. Periksa koneksi dan coba lagi.")
+    } finally {
+      setIsBackingUp(false)
+    }
+  }
+
 
   const handleOpenAddUser = () => {
     setEditingUser(null)
@@ -241,12 +278,13 @@ export default function SettingsPage() {
         )}
 
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-5">
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-cols-6">
             <TabsTrigger value="general" className="gap-2"><Building2 className="size-4" /><span className="hidden sm:inline">Umum</span></TabsTrigger>
             <TabsTrigger value="notifications" className="gap-2"><Bell className="size-4" /><span className="hidden sm:inline">Notifikasi</span></TabsTrigger>
             <TabsTrigger value="workflow" className="gap-2"><Settings className="size-4" /><span className="hidden sm:inline">Workflow</span></TabsTrigger>
             <TabsTrigger value="pricing" className="gap-2"><DollarSign className="size-4" /><span className="hidden sm:inline">Harga</span></TabsTrigger>
             <TabsTrigger value="users" className="gap-2"><Users className="size-4" /><span className="hidden sm:inline">Tim</span></TabsTrigger>
+            <TabsTrigger value="backup" className="gap-2"><Database className="size-4" /><span className="hidden sm:inline">Backup</span></TabsTrigger>
           </TabsList>
 
           {/* General Settings */}
@@ -419,6 +457,80 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <Button className="mt-4 bg-orange-500 hover:bg-orange-600 text-white shadow-sm" onClick={handleOpenAddUser}><Users className="mr-2 size-4" /> Tambah Anggota Tim</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+
+          {/* Backup Data */}
+          <TabsContent value="backup" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="size-5 text-primary" />
+                  Backup Data
+                </CardTitle>
+                <CardDescription>
+                  Unduh salinan seluruh data sistem sebagai file JSON untuk pencegahan kehilangan data
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Info Banner */}
+                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20 p-4 flex items-start gap-3">
+                  <AlertTriangle className="size-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Penting!</p>
+                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                      File backup berisi seluruh data sistem (pelanggan, kendaraan, SPK, inventori, invoice, dll).
+                      Simpan file ini di tempat yang aman dan jangan bagikan kepada pihak yang tidak berwenang.
+                    </p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 shrink-0">
+                      <Download className="size-5 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-medium">Export Backup</p>
+                      <p className="text-sm text-muted-foreground">
+                        Unduh semua data sistem sebagai file <code className="bg-muted px-1 rounded text-xs">.json</code>.
+                        File ini mencakup: pengguna, pelanggan, kendaraan, SPK, inventori, invoice, dan pengaturan.
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button
+                    id="btn-backup-export-pimpinan"
+                    onClick={handleBackup}
+                    disabled={isBackingUp}
+                    className="gap-2 bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    {isBackingUp ? (
+                      <><Loader2 className="size-4 animate-spin" />Sedang memproses...</>
+                    ) : (
+                      <><Download className="size-4" />Unduh Backup Sekarang</>
+                    )}
+                  </Button>
+                </div>
+
+                <Separator />
+
+                <div className="rounded-lg border p-4 bg-muted/30 flex items-start gap-3">
+                  <Shield className="size-5 text-muted-foreground shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Keamanan Data</p>
+                    <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                      <li>Password pengguna tidak disertakan dalam file backup</li>
+                      <li>Hanya Admin dan Pimpinan yang dapat mengunduh backup</li>
+                      <li>Disarankan melakukan backup secara rutin (mingguan/bulanan)</li>
+                      <li>Simpan backup di cloud storage atau media eksternal yang aman</li>
+                    </ul>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

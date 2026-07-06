@@ -18,6 +18,7 @@ import {
   Clock,
 } from "lucide-react"
 import { PromoCarousel } from "@/components/admin/PromoCarousel"
+import { RealtimeStockWidget } from "@/components/admin/RealtimeStockWidget"
 import Link from "next/link"
 import { AdminHeader } from "@/components/admin/AdminHeader"
 import { StatsCard } from "@/components/admin/stats-card"
@@ -388,6 +389,11 @@ export default function AdminDashboard() {
               </div>
 
             </div>
+          </div>
+
+          {/* Realtime Stock Widget */}
+          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-white/10">
+            <RealtimeStockWidget />
           </div>
         </div>
       </div>

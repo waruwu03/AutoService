@@ -63,6 +63,7 @@ import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { PimpinanHeader } from "@/components/pimpinan/pimpinan-header"
+import { RealtimeStockWidget } from "@/components/admin/RealtimeStockWidget"
 import useSWR from "swr"
 import { fetcher, apiClient } from "@/lib/api-client"
 import { useAuth } from "@/context/AuthContext"
@@ -448,6 +449,11 @@ export default function PimpinanPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Realtime Stock Widget */}
+        <div className="mt-8 pt-8 border-t border-slate-200 dark:border-white/10">
+          <RealtimeStockWidget />
         </div>
       </div>
     </>
