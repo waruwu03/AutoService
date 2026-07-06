@@ -438,7 +438,7 @@ export default function StokDashboardPage() {
                 {filtered
                   .sort((a, b) => {
                     const order: Record<StockStatus, number> = { Kritis: 0, Menipis: 1, Aman: 2, Penuh: 3 }
-                    return order[a.status] - order[b.status]
+                    return order[a.status as StockStatus] - order[b.status as StockStatus]
                   })
                   .map((item) => (
                     <StockRow key={item.id} item={item} />
