@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Save, Building2, Wrench, Receipt, Bell, Moon, Sun, Plus, Loader2 } from "lucide-react"
+import { Save, Building2, Wrench, Receipt, Bell, Moon, Sun, Plus, Loader2, Database, Shield, Download, AlertTriangle } from "lucide-react"
 import { useTheme } from "next-themes"
 import { AdminHeader } from "@/components/admin/AdminHeader"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,7 @@ import { useApiPaginated } from "@/hooks/useApi"
 import type { User, Setting } from "@/types"
 import useSWR from "swr"
 import { fetcher, api } from "@/lib/api-client"
+import { getAccessToken } from "@/lib/storage"
 import { toast } from "sonner"
 
 export default function SettingsPage() {
@@ -24,6 +25,7 @@ export default function SettingsPage() {
   const { data: mechanics } = useApiPaginated<User>('/users', 1, 100, { role: 'MEKANIK' })
   const { data: settings, mutate } = useSWR<Setting[]>('/settings', fetcher)
   const [isSaving, setIsSaving] = useState(false)
+  const [isBackingUp, setIsBackingUp] = useState(false)
 
   const [businessSettings, setBusinessSettings] = useState({
     name: "AutoServis",
@@ -86,6 +88,48 @@ export default function SettingsPage() {
     }
   }
 
+  const handleBackup = async () => {
+    setIsBackingUp(true)
+    try {
+      const token = getAccessToken() || ''
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api/v1'
+
+      const response = await fetch(`${baseUrl}/backup/export`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      // Ambil nama file dari header Content-Disposition
+      const contentDisposition = response.headers.get('Content-Disposition') || ''
+      const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+      const filename = filenameMatch ? filenameMatch[1] : `autoservice-backup-${new Date().toISOString().slice(0, 10)}.json`
+
+      // Unduh file
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      toast.success("Backup berhasil diunduh! Simpan file ini di tempat yang aman.")
+    } catch (error) {
+      console.error(error)
+      toast.error("Gagal membuat backup. Periksa koneksi dan coba lagi.")
+    } finally {
+      setIsBackingUp(false)
+    }
+  }
+
   return (
     <>
       <AdminHeader title="Pengaturan" description="Kelola pengaturan sistem AutoServis" />
@@ -93,7 +137,7 @@ export default function SettingsPage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-4xl">
           <Tabs defaultValue="business" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="business" className="gap-2">
                 <Building2 className="size-4" />
                 <span className="hidden sm:inline">Bisnis</span>
@@ -113,6 +157,10 @@ export default function SettingsPage() {
               <TabsTrigger value="appearance" className="gap-2">
                 <Moon className="size-4" />
                 <span className="hidden sm:inline">Tampilan</span>
+              </TabsTrigger>
+              <TabsTrigger value="backup" className="gap-2">
+                <Database className="size-4" />
+                <span className="hidden sm:inline">Backup</span>
               </TabsTrigger>
             </TabsList>
 
@@ -482,6 +530,88 @@ export default function SettingsPage() {
                     <Save className="mr-2 size-4" />
                     Simpan Preferensi
                   </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+
+            {/* Backup & Restore */}
+            <TabsContent value="backup">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Database className="size-5 text-primary" />
+                    Backup Data
+                  </CardTitle>
+                  <CardDescription>
+                    Unduh salinan seluruh data sistem sebagai file JSON untuk pencegahan kehilangan data
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Info Banner */}
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-900/20 p-4 flex items-start gap-3">
+                    <AlertTriangle className="size-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Penting!</p>
+                      <p className="text-xs text-amber-700 dark:text-amber-400">
+                        File backup berisi seluruh data sistem (pelanggan, kendaraan, SPK, inventori, invoice, dll).
+                        Simpan file ini di tempat yang aman dan jangan bagikan kepada pihak yang tidak berwenang.
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Backup Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 shrink-0">
+                        <Download className="size-5 text-primary" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium">Export Backup</p>
+                        <p className="text-sm text-muted-foreground">
+                          Unduh semua data sistem sebagai file <code className="bg-muted px-1 rounded text-xs">.json</code>.
+                          File ini mencakup: pengguna, pelanggan, kendaraan, SPK, inventori, invoice, dan pengaturan.
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button
+                      id="btn-backup-export"
+                      onClick={handleBackup}
+                      disabled={isBackingUp}
+                      className="gap-2"
+                    >
+                      {isBackingUp ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin" />
+                          Sedang memproses...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="size-4" />
+                          Unduh Backup Sekarang
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <Separator />
+
+                  {/* Security note */}
+                  <div className="rounded-lg border p-4 bg-muted/30 flex items-start gap-3">
+                    <Shield className="size-5 text-muted-foreground shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Keamanan Data</p>
+                      <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                        <li>Password pengguna tidak disertakan dalam file backup</li>
+                        <li>Hanya Admin dan Pimpinan yang dapat mengunduh backup</li>
+                        <li>Disarankan melakukan backup secara rutin (mingguan/bulanan)</li>
+                        <li>Simpan backup di cloud storage atau media eksternal yang aman</li>
+                      </ul>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

@@ -15,6 +15,7 @@ import partRequestRoutes from './part-request.routes';
 import settingRoutes from './setting.routes';
 import aiRoutes from './ai.routes';
 import notificationRoutes from './notification.routes';
+import backupRoutes from './backup.routes';
 
 const router = Router();
 
@@ -32,5 +33,6 @@ router.use('/gudang/part-requests', partRequestRoutes);
 router.use('/settings', settingRoutes);
 router.use('/ai', aiRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/backup', backupRoutes);
 
 export default router;

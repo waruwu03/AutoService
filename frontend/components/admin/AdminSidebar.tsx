@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Gift,
   ShieldCheck,
+  BarChart3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/context/AuthContext'
@@ -101,6 +102,11 @@ const transactionMenuItems = [
 ]
 
 const inventoryMenuItems = [
+  {
+    title: 'Dashboard Stok',
+    url: '/admin/stok-dashboard',
+    icon: BarChart3,
+  },
   {
     title: 'Sparepart',
     url: '/admin/spareparts',
