@@ -11,6 +11,7 @@ import { useUI } from '@/context/UIContext'
 import { Loader2 } from "lucide-react"
 import { ClipboardList, Package, Star, Clock, CheckCircle2, AlertCircle, ChevronRight, Wrench, Car } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
@@ -128,22 +129,25 @@ export default function MekanikDashboard() {
 
 
       {/* Status Summary */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { label: "Pending", value: stats.pending, icon: AlertCircle, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-          { label: "Progres", value: stats.inProgress, icon: Wrench, color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-          { label: "Selesai", value: stats.completed, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-        ].map((item) => (
-          <Card key={item.label} className="bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl border-slate-200 dark:border-white/5 hover:bg-white dark:hover:bg-zinc-900 transition-all duration-300 rounded-2xl shadow-sm dark:shadow-none group">
-            <CardContent className="p-3 text-center">
-              <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center mx-auto mb-1.5 border transition-all duration-500 group-hover:scale-110", item.bg, item.border)}>
-                <item.icon className={cn("h-5 w-5", item.color)} />
-              </div>
-              <p className="text-2xl font-black text-slate-900 dark:text-zinc-100">{item.value}</p>
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-500 mt-0.5">{item.label}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <PremiumStatCard
+          title="Pending"
+          value={stats.pending}
+          icon={AlertCircle}
+          colorTheme="amber"
+        />
+        <PremiumStatCard
+          title="Progres"
+          value={stats.inProgress}
+          icon={Wrench}
+          colorTheme="blue"
+        />
+        <PremiumStatCard
+          title="Selesai"
+          value={stats.completed}
+          icon={CheckCircle2}
+          colorTheme="emerald"
+        />
       </div>
 
       {/* Quick Actions */}

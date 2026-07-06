@@ -35,6 +35,7 @@ import {
 } from "recharts"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import { Badge } from "@/components/ui/badge"
 import {
   Table,
@@ -108,11 +109,11 @@ export default function DashboardPage() {
   const activeMechanics = mechanicPerformance.filter((m: any) => m.isActive !== false).length
 
   const kpiData = [
-    { title: "Total Pendapatan", value: isLoading ? "..." : `Rp ${(totalRevenue / 1_000_000).toFixed(1)}M`, change: "+", changeType: "positive" as const, subtext: "bulan ini", icon: DollarSign, color: "bg-blue-500" },
-    { title: "SPK Selesai", value: isLoading ? "..." : completedOrders.toString(), change: "+", changeType: "positive" as const, subtext: "completed", icon: FileText, color: "bg-emerald-500" },
-    { title: "SPK Pending", value: isLoading ? "..." : pendingOrders.toString(), change: "-", changeType: "negative" as const, subtext: "menunggu", icon: Clock, color: "bg-amber-500" },
-    { title: "Rating", value: isLoading ? "..." : avgRating.toFixed(1), change: "+0.2", changeType: "positive" as const, subtext: "dari 5.0", icon: Star, color: "bg-purple-500" },
-    { title: "Mekanik Aktif", value: isLoading ? "..." : activeMechanics.toString(), change: "0", changeType: "neutral" as const, subtext: "on duty", icon: Users, color: "bg-slate-500" },
+    { title: "Total Pendapatan", value: isLoading ? "..." : `Rp ${(totalRevenue / 1_000_000).toFixed(1)}M`, change: "+", changeType: "positive" as const, subtext: "bulan ini", icon: DollarSign, colorTheme: "blue" as const },
+    { title: "SPK Selesai", value: isLoading ? "..." : completedOrders.toString(), change: "+", changeType: "positive" as const, subtext: "completed", icon: FileText, colorTheme: "emerald" as const },
+    { title: "SPK Pending", value: isLoading ? "..." : pendingOrders.toString(), change: "-", changeType: "negative" as const, subtext: "menunggu", icon: Clock, colorTheme: "amber" as const },
+    { title: "Rating", value: isLoading ? "..." : avgRating.toFixed(1), change: "+0.2", changeType: "positive" as const, subtext: "dari 5.0", icon: Star, colorTheme: "purple" as const },
+    { title: "Mekanik Aktif", value: isLoading ? "..." : activeMechanics.toString(), change: "0", changeType: "neutral" as const, subtext: "on duty", icon: Users, colorTheme: "orange" as const },
   ]
 
   const revenueChartData = Array.isArray(dash.monthlyRevenueStats || dash.monthlyRevenue) ? (dash.monthlyRevenueStats || dash.monthlyRevenue) : [
@@ -170,37 +171,33 @@ export default function DashboardPage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {kpiData.map((kpi) => (
-            <Card key={kpi.title}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{kpi.title}</p>
-                    <p className="text-2xl font-bold">{kpi.value}</p>
-                    <div className="flex items-center gap-1">
-                      {kpi.changeType === "positive" && (
-                        <div className="flex items-center gap-0.5 text-emerald-500">
-                          <TrendingUp className="size-3" />
-                          <span className="text-xs font-medium">{kpi.change}</span>
-                        </div>
-                      )}
-                      {kpi.changeType === "negative" && (
-                        <div className="flex items-center gap-0.5 text-red-500">
-                          <TrendingDown className="size-3" />
-                          <span className="text-xs font-medium">{kpi.change}</span>
-                        </div>
-                      )}
-                      {kpi.changeType === "neutral" && (
-                        <span className="text-xs font-medium text-muted-foreground">{kpi.change}</span>
-                      )}
-                      <span className="text-xs text-muted-foreground">{kpi.subtext}</span>
+            <PremiumStatCard
+              key={kpi.title}
+              title={kpi.title}
+              value={kpi.value}
+              description={kpi.subtext}
+              icon={kpi.icon}
+              colorTheme={kpi.colorTheme}
+              trend={
+                <div className="flex items-center gap-1 mt-1">
+                  {kpi.changeType === "positive" && (
+                    <div className="flex items-center gap-0.5 text-emerald-500">
+                      <TrendingUp className="size-3" />
+                      <span className="text-xs font-medium">{kpi.change}</span>
                     </div>
-                  </div>
-                  <div className={cn("flex size-10 items-center justify-center rounded-lg text-white", kpi.color)}>
-                    <kpi.icon className="size-5" />
-                  </div>
+                  )}
+                  {kpi.changeType === "negative" && (
+                    <div className="flex items-center gap-0.5 text-red-500">
+                      <TrendingDown className="size-3" />
+                      <span className="text-xs font-medium">{kpi.change}</span>
+                    </div>
+                  )}
+                  {kpi.changeType === "neutral" && (
+                    <span className="text-xs font-medium text-muted-foreground">{kpi.change}</span>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+              }
+            />
           ))}
         </div>
 

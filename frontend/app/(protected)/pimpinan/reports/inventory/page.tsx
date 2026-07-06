@@ -14,6 +14,10 @@ import {
   ChevronDown,
   FileText,
   FileSpreadsheet,
+  Wallet,
+  AlertOctagon,
+  TrendingUp,
+  Box,
 } from "lucide-react"
 import {
   Bar,
@@ -41,6 +45,7 @@ import {
 import { ChartContainer } from "@/components/ui/chart"
 import { Progress } from "@/components/ui/progress"
 import { PimpinanHeader } from "@/components/pimpinan/pimpinan-header"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import useSWR from "swr"
 import { apiClient, fetcher } from "@/lib/api-client"
 import { toast } from "sonner"
@@ -191,22 +196,40 @@ export default function InventoryReportPage() {
 
         {/* Summary Cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Total Item</CardTitle><Package className="size-4 text-muted-foreground" /></CardHeader>
-            <CardContent><div className="text-2xl font-bold">{inventoryItems.length}</div><p className="text-xs text-muted-foreground">jenis barang</p></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Total Nilai Stok</CardTitle><Package className="size-4 text-muted-foreground" /></CardHeader>
-            <CardContent><div className="text-2xl font-bold">{formatRupiah(totalValue)}</div><div className="flex items-center gap-1 text-xs text-emerald-500"><ArrowUpRight className="size-3" /><span>+5% dari bulan lalu</span></div></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Stok Rendah</CardTitle><AlertTriangle className="size-4 text-amber-500" /></CardHeader>
-            <CardContent><div className="text-2xl font-bold text-amber-500">{lowStockCount}</div><p className="text-xs text-muted-foreground">item perlu restock</p></CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Stok Kritis</CardTitle><AlertTriangle className="size-4 text-destructive" /></CardHeader>
-            <CardContent><div className="text-2xl font-bold text-destructive">{criticalStockCount}</div><p className="text-xs text-muted-foreground">item segera habis</p></CardContent>
-          </Card>
+          <PremiumStatCard
+            title="Total Item"
+            value={inventoryItems.length}
+            description="jenis barang tersedia"
+            icon={Box}
+            colorTheme="blue"
+          />
+          <PremiumStatCard
+            title="Total Nilai Stok"
+            value={formatRupiah(totalValue)}
+            trend={
+              <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-500">
+                <TrendingUp className="size-3.5" />
+                <span>+5% dari bulan lalu</span>
+              </div>
+            }
+            icon={Wallet}
+            colorTheme="emerald"
+          />
+          <PremiumStatCard
+            title="Stok Rendah"
+            value={lowStockCount}
+            description="item perlu di-restock"
+            icon={AlertTriangle}
+            colorTheme="amber"
+          />
+          <PremiumStatCard
+            title="Stok Kritis"
+            value={criticalStockCount}
+            description="item segera habis!"
+            icon={AlertOctagon}
+            colorTheme="red"
+            criticalAlert={criticalStockCount > 0}
+          />
         </div>
 
         {/* Charts */}

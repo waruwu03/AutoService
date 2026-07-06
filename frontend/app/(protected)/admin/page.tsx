@@ -21,6 +21,7 @@ import { PromoCarousel } from "@/components/admin/PromoCarousel"
 import Link from "next/link"
 import { AdminHeader } from "@/components/admin/AdminHeader"
 import { StatsCard } from "@/components/admin/stats-card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -88,77 +89,44 @@ export default function AdminDashboard() {
           
           {/* Stats Grid - Premium Cards */}
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="relative overflow-hidden border-none shadow-sm bg-white dark:bg-slate-900 group">
-              <div className="absolute top-0 left-0 w-1 h-full bg-blue-500" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Order</p>
-                    <h3 className="text-3xl font-bold mt-1">{isDashboardLoading ? "..." : stats.todayWorkOrders}</h3>
-                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
-                      <TrendingUp className="size-3 text-emerald-500" />
-                      <span className="text-emerald-500 font-semibold">+4%</span> dari kemarin
-                    </p>
-                  </div>
-                  <div className="size-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                    <ClipboardList className="size-6" />
-                  </div>
+            <PremiumStatCard
+              title="Total Order"
+              value={isDashboardLoading ? "..." : stats.todayWorkOrders}
+              trend={
+                <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-500 mt-1">
+                  <TrendingUp className="size-3.5" />
+                  <span>+4% dari kemarin</span>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="relative overflow-hidden border-none shadow-sm bg-white dark:bg-slate-900 group">
-              <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Pendapatan</p>
-                    <h3 className="text-2xl font-bold mt-1 truncate max-w-[150px]">
-                      {isDashboardLoading ? "..." : formatCurrency(stats.monthlyRevenue)}
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
-                      <TrendingUp className="size-3 text-emerald-500" />
-                      <span className="text-emerald-500 font-semibold">+12%</span> bulan ini
-                    </p>
-                  </div>
-                  <div className="size-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-                    <Receipt className="size-6" />
-                  </div>
+              }
+              icon={ClipboardList}
+              colorTheme="blue"
+            />
+            <PremiumStatCard
+              title="Pendapatan"
+              value={isDashboardLoading ? "..." : formatCurrency(stats.monthlyRevenue)}
+              trend={
+                <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-500 mt-1">
+                  <TrendingUp className="size-3.5" />
+                  <span>+12% bulan ini</span>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="relative overflow-hidden border-none shadow-sm bg-white dark:bg-slate-900 group">
-              <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Dalam Proses</p>
-                    <h3 className="text-3xl font-bold mt-1">{isDashboardLoading ? "..." : stats.activeWorkOrders}</h3>
-                    <p className="text-xs text-slate-400 mt-1">Antrian mekanik</p>
-                  </div>
-                  <div className="size-12 rounded-2xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform">
-                    <Wrench className="size-6" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="relative overflow-hidden border-none shadow-sm bg-white dark:bg-slate-900 group">
-              <div className="absolute top-0 left-0 w-1 h-full bg-purple-500" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Pelanggan</p>
-                    <h3 className="text-3xl font-bold mt-1">{isDashboardLoading ? "..." : stats.totalCustomers}</h3>
-                    <p className="text-xs text-slate-400 mt-1">Database aktif</p>
-                  </div>
-                  <div className="size-12 rounded-2xl bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
-                    <Users className="size-6" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              }
+              icon={Receipt}
+              colorTheme="emerald"
+            />
+            <PremiumStatCard
+              title="Dalam Proses"
+              value={isDashboardLoading ? "..." : stats.activeWorkOrders}
+              description="Antrian mekanik"
+              icon={Wrench}
+              colorTheme="orange"
+            />
+            <PremiumStatCard
+              title="Pelanggan"
+              value={isDashboardLoading ? "..." : stats.totalCustomers}
+              description="Database aktif"
+              icon={Users}
+              colorTheme="purple"
+            />
           </div>
 
           <div className="grid gap-8 lg:grid-cols-3">

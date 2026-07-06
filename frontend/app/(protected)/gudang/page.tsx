@@ -9,6 +9,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import { DashboardCharts } from "@/components/gudang/dashboard-charts"
 import { GudangHeader } from "@/components/gudang/gudang-header"
 import { CriticalStockAlert } from "@/components/gudang/critical-stock-alert"
@@ -58,63 +59,33 @@ export default function GudangDashboard() {
 
           {/* Stats Grid */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/5 shadow-sm rounded-2xl overflow-hidden group">
-              <CardContent className="p-5 flex items-center gap-4">
-                <div className="size-12 rounded-2xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 group-hover:scale-110 transition-transform">
-                  <Package className="size-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total SKU</p>
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white leading-none">
-                    {loadingStock ? "..." : allItems.length.toLocaleString()}
-                  </h3>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/5 shadow-sm rounded-2xl overflow-hidden group">
-              <CardContent className="p-5 flex items-center gap-4">
-                <div className="size-12 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center border border-rose-100 dark:border-rose-500/20 group-hover:scale-110 transition-transform">
-                  <AlertTriangle className={cn("size-6 text-rose-600 dark:text-rose-400", criticalItems.length > 0 && "animate-pulse")} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Stok Kosong</p>
-                  <h3 className="text-2xl font-black text-rose-600 leading-none">
-                    {loadingStock ? "..." : criticalItems.length}
-                  </h3>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/5 shadow-sm rounded-2xl overflow-hidden group">
-              <CardContent className="p-5 flex items-center gap-4">
-                <div className="size-12 rounded-2xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center border border-amber-100 dark:border-amber-500/20 group-hover:scale-110 transition-transform">
-                  <TrendingDown className="size-6 text-amber-600 dark:text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Stok Menipis</p>
-                  <h3 className="text-2xl font-black text-amber-600 leading-none">
-                    {loadingStock ? "..." : minimumItems.length}
-                  </h3>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/5 shadow-sm rounded-2xl overflow-hidden group">
-              <CardContent className="p-5 flex items-center gap-4">
-                <div className="size-12 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center border border-slate-200 dark:border-white/10 group-hover:scale-110 transition-transform">
-                  <ClipboardCheck className="size-6 text-slate-600 dark:text-slate-400" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Nilai Inventori</p>
-                  <h3 className="text-2xl font-black text-slate-900 dark:text-white leading-none">
-                    {loadingStock ? "..." : `Rp ${(
-                      allItems.reduce((s: number, i: any) => s + Number(i.sellPrice || 0) * (i.stockQuantity || 0), 0) / 1_000_000
-                    ).toFixed(0)}Jt`}
-                  </h3>
-                </div>
-              </CardContent>
-            </Card>
+            <PremiumStatCard
+              title="Total SKU"
+              value={loadingStock ? "..." : allItems.length.toLocaleString()}
+              icon={Package}
+              colorTheme="blue"
+            />
+            <PremiumStatCard
+              title="Stok Kosong"
+              value={loadingStock ? "..." : criticalItems.length}
+              icon={AlertTriangle}
+              colorTheme="red"
+              criticalAlert={criticalItems.length > 0}
+            />
+            <PremiumStatCard
+              title="Stok Menipis"
+              value={loadingStock ? "..." : minimumItems.length}
+              icon={TrendingDown}
+              colorTheme="amber"
+            />
+            <PremiumStatCard
+              title="Nilai Inventori"
+              value={loadingStock ? "..." : `Rp ${(
+                allItems.reduce((s: number, i: any) => s + Number(i.sellPrice || 0) * (i.stockQuantity || 0), 0) / 1_000_000
+              ).toFixed(0)}Jt`}
+              icon={ClipboardCheck}
+              colorTheme="emerald"
+            />
           </div>
 
           {/* Secondary Stats & Quick Info */}
