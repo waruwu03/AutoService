@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Download, TrendingUp, DollarSign, ClipboardList, Users, Car, Loader2 } from "lucide-react"
 import { AdminHeader } from "@/components/admin/AdminHeader"
 import { RevenueChart } from "@/components/admin/revenue-chart"
-import { StatsCard } from "@/components/admin/stats-card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -116,30 +116,49 @@ export default function ReportsPage() {
 
           {/* Summary Stats */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatsCard
+            <PremiumStatCard
               title="Total Pendapatan"
               value={isLoading ? "..." : formatCurrency(totalRevenue)}
               icon={DollarSign}
-              trend={{ value: 12, isPositive: true }}
+              colorTheme="blue"
+              trend={
+                <div className="flex items-center gap-0.5 text-emerald-500 mt-1">
+                  <TrendingUp className="size-3" />
+                  <span className="text-xs font-medium">+12%</span>
+                </div>
+              }
             />
-            <StatsCard
+            <PremiumStatCard
               title="Total SPK"
               value={isLoading ? "..." : totalSPK}
               description={`${completedSPK} selesai`}
               icon={ClipboardList}
-              trend={{ value: 8, isPositive: true }}
+              colorTheme="emerald"
+              trend={
+                <div className="flex items-center gap-0.5 text-emerald-500 mt-1">
+                  <TrendingUp className="size-3" />
+                  <span className="text-xs font-medium">+8%</span>
+                </div>
+              }
             />
-            <StatsCard
+            <PremiumStatCard
               title="Rata-rata Transaksi"
               value={isLoading ? "..." : formatCurrency(avgOrderValue)}
               icon={TrendingUp}
-              trend={{ value: 5, isPositive: true }}
+              colorTheme="purple"
+              trend={
+                <div className="flex items-center gap-0.5 text-emerald-500 mt-1">
+                  <TrendingUp className="size-3" />
+                  <span className="text-xs font-medium">+5%</span>
+                </div>
+              }
             />
-            <StatsCard
+            <PremiumStatCard
               title="Total Pelanggan"
               value={isLoading ? "..." : customers.length}
               description={`${totalVehicles} kendaraan`}
               icon={Users}
+              colorTheme="orange"
             />
           </div>
 

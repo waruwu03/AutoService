@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useState, useMemo } from "react"
 import { Plus, Search, Filter, Wrench, Star, MoreVertical, Edit, Trash2, Eye, Loader2, Phone, Mail, MapPin, Calendar, CheckCircle2, Users, TrendingUp } from "lucide-react"
 import { AdminHeader } from "@/components/admin/AdminHeader"
-import { StatsCard } from "@/components/admin/stats-card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -131,20 +131,23 @@ export default function MechanicsPage() {
       <div className="p-6 space-y-6">
         {/* KPI Cards */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <StatsCard
+          <PremiumStatCard
             title="Total Mekanik Aktif"
             value={isLoading ? "..." : activeCount.toString()}
             icon={Users}
+            colorTheme="blue"
           />
-          <StatsCard
+          <PremiumStatCard
             title="Total SPK Ditangani"
             value={isLoading ? "..." : totalSPK.toString()}
             icon={Wrench}
+            colorTheme="amber"
           />
-          <StatsCard
+          <PremiumStatCard
             title="SPK Selesai"
             value={isLoading ? "..." : totalCompleted.toString()}
             icon={CheckCircle2}
+            colorTheme="emerald"
           />
         </div>
 

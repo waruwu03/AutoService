@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import {
   Table,
   TableBody,
@@ -117,37 +118,31 @@ export default function SPKPage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-7xl space-y-6">
           {/* Stats Cards */}
-          <div className="grid gap-4 sm:grid-cols-4">
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Total SPK</p>
-                <p className="text-2xl font-bold">{isLoading ? "..." : spkList.length}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold">
-                  {isLoading ? "..." : spkList.filter((s: any) => s.status === "PENDING").length}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Dikerjakan</p>
-                <p className="text-2xl font-bold">
-                  {isLoading ? "..." : spkList.filter((s: any) => s.status === "IN_PROGRESS").length}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Selesai</p>
-                <p className="text-2xl font-bold">
-                  {isLoading ? "..." : spkList.filter((s: any) => s.status === "COMPLETED" || s.status === "INVOICED").length}
-                </p>
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <PremiumStatCard
+              title="Total SPK"
+              value={isLoading ? "..." : spkList.length}
+              icon={FileText}
+              colorTheme="blue"
+            />
+            <PremiumStatCard
+              title="Pending"
+              value={isLoading ? "..." : spkList.filter((s: any) => s.status === "PENDING").length}
+              icon={Clock}
+              colorTheme="amber"
+            />
+            <PremiumStatCard
+              title="Dikerjakan"
+              value={isLoading ? "..." : spkList.filter((s: any) => s.status === "IN_PROGRESS").length}
+              icon={Wrench}
+              colorTheme="orange"
+            />
+            <PremiumStatCard
+              title="Selesai"
+              value={isLoading ? "..." : spkList.filter((s: any) => s.status === "COMPLETED" || s.status === "INVOICED").length}
+              icon={CheckCircle}
+              colorTheme="emerald"
+            />
           </div>
 
           {/* SPK Table */}

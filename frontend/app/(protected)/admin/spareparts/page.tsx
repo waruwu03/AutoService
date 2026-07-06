@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import {
   Dialog,
   DialogContent,
@@ -351,22 +352,31 @@ export default function SparePartsPage() {
 
           {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { label: "Total Sparepart", value: spareparts.length + " item", icon: <Package className="size-5 text-blue-500" />, color: "text-blue-600", bg: "bg-blue-500/10" },
-              { label: "Stok Kritis", value: lowStockCount + " item", icon: <AlertTriangle className="size-5 text-red-500" />, color: "text-red-600", bg: "bg-red-500/10" },
-              { label: "Stok Normal", value: (spareparts.length - lowStockCount) + " item", icon: <CheckCircle2 className="size-5 text-green-500" />, color: "text-green-600", bg: "bg-green-500/10" },
-              { label: "Nilai Stok", value: formatCurrency(totalValue), icon: <TrendingDown className="size-5 text-purple-500" />, color: "text-purple-600", bg: "bg-purple-500/10" },
-            ].map((stat) => (
-              <Card key={stat.label}>
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className={`rounded-xl p-3 ${stat.bg}`}>{stat.icon}</div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                    <p className={`text-xl font-bold ${stat.color}`}>{isLoading ? "..." : stat.value}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <PremiumStatCard
+              title="Total Sparepart"
+              value={isLoading ? "..." : `${spareparts.length} item`}
+              icon={Package}
+              colorTheme="blue"
+            />
+            <PremiumStatCard
+              title="Stok Kritis"
+              value={isLoading ? "..." : `${lowStockCount} item`}
+              icon={AlertTriangle}
+              colorTheme="red"
+              criticalAlert={lowStockCount > 0}
+            />
+            <PremiumStatCard
+              title="Stok Normal"
+              value={isLoading ? "..." : `${spareparts.length - lowStockCount} item`}
+              icon={CheckCircle2}
+              colorTheme="emerald"
+            />
+            <PremiumStatCard
+              title="Nilai Stok"
+              value={isLoading ? "..." : formatCurrency(totalValue)}
+              icon={TrendingDown}
+              colorTheme="purple"
+            />
           </div>
 
           {/* Table */}

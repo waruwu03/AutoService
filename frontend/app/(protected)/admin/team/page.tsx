@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { Plus, Search, Filter, ShieldCheck, MoreVertical, Edit, Trash2, Eye, Loader2, Phone, Mail, MapPin, Calendar, Users, Shield } from "lucide-react"
 import { AdminHeader } from "@/components/admin/AdminHeader"
-import { StatsCard } from "@/components/admin/stats-card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -121,20 +121,23 @@ export default function TeamPage() {
       <div className="p-6 space-y-6">
         {/* KPI Cards */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <StatsCard
+          <PremiumStatCard
             title="Total Anggota Aktif"
             value={isLoading ? "..." : activeCount.toString()}
             icon={Users}
+            colorTheme="blue"
           />
-          <StatsCard
+          <PremiumStatCard
             title="Total Admin"
             value={isLoading ? "..." : adminCount.toString()}
             icon={ShieldCheck}
+            colorTheme="emerald"
           />
-          <StatsCard
+          <PremiumStatCard
             title="Total Mekanik"
             value={isLoading ? "..." : mechanicCount.toString()}
             icon={Shield}
+            colorTheme="amber"
           />
         </div>
 

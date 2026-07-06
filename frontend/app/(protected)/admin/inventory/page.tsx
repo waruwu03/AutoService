@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { AlertTriangle, Plus, Search, Filter, Pencil, Trash2, Package, Receipt, Loader2, TrendingUp } from "lucide-react"
-import { StatsCard } from "@/components/admin/stats-card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import useSWR from "swr"
 import { fetcher } from "@/lib/api-client"
 import { cn } from "@/lib/utils"
@@ -101,23 +101,27 @@ export default function AdminInventoryPage() {
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <StatsCard
+          <PremiumStatCard
             title="Total Suku Cadang"
             value={isLoading ? "..." : `${enriched.length} Item`}
             icon={Package}
             description="Total item unik"
+            colorTheme="blue"
           />
-          <StatsCard
+          <PremiumStatCard
             title="Barang Kritis"
             value={isLoading ? "..." : criticalCount.toString()}
             icon={AlertTriangle}
             description={criticalCount > 0 ? "Butuh Restock" : "Aman"}
+            colorTheme="red"
+            criticalAlert={criticalCount > 0}
           />
-          <StatsCard
+          <PremiumStatCard
             title="Total Nilai Stok"
             value={isLoading ? "..." : `Rp ${(totalValue / 1_000_000).toFixed(1)}jt`}
             icon={TrendingUp}
             description="Estimasi nilai aset"
+            colorTheme="emerald"
           />
         </div>
 

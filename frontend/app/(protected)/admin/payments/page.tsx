@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import {
   Dialog,
   DialogContent,
@@ -290,46 +291,31 @@ export default function PaymentsPage() {
 
           {/* ── Stats ── */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                label: "Total Terlunasi",
-                value: formatCurrency(totalPaid),
-                icon: <TrendingUp className="size-5 text-green-500" />,
-                color: "text-green-600",
-                bg: "bg-green-500/10",
-              },
-              {
-                label: "Sisa Tagihan",
-                value: formatCurrency(totalPending),
-                icon: <Wallet className="size-5 text-orange-500" />,
-                color: "text-orange-600",
-                bg: "bg-orange-500/10",
-              },
-              {
-                label: "Bayar Sebagian",
-                value: totalPartial + " invoice",
-                icon: <DollarSign className="size-5 text-blue-500" />,
-                color: "text-blue-600",
-                bg: "bg-blue-500/10",
-              },
-              {
-                label: "Terlambat",
-                value: totalOverdue + " invoice",
-                icon: <AlertCircle className="size-5 text-red-500" />,
-                color: "text-red-600",
-                bg: "bg-red-500/10",
-              },
-            ].map((stat) => (
-              <Card key={stat.label}>
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className={`rounded-xl p-3 ${stat.bg}`}>{stat.icon}</div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                    <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <PremiumStatCard
+              title="Total Terlunasi"
+              value={formatCurrency(totalPaid)}
+              icon={TrendingUp}
+              colorTheme="emerald"
+            />
+            <PremiumStatCard
+              title="Sisa Tagihan"
+              value={formatCurrency(totalPending)}
+              icon={Wallet}
+              colorTheme="orange"
+            />
+            <PremiumStatCard
+              title="Bayar Sebagian"
+              value={`${totalPartial} invoice`}
+              icon={DollarSign}
+              colorTheme="blue"
+            />
+            <PremiumStatCard
+              title="Terlambat"
+              value={`${totalOverdue} invoice`}
+              icon={AlertCircle}
+              colorTheme="red"
+              criticalAlert={totalOverdue > 0}
+            />
           </div>
 
           {/* ── Table ── */}

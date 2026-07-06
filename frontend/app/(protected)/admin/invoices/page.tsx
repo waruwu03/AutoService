@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PremiumStatCard } from "@/components/ui/premium-stat-card"
 import {
   Dialog,
   DialogContent,
@@ -165,37 +166,31 @@ export default function InvoicesPage() {
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-7xl space-y-6">
           {/* Stats Cards */}
-          <div className="grid gap-4 sm:grid-cols-4">
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Total Invoice</p>
-                <p className="text-2xl font-bold">{isLoading ? "..." : invoices.length}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Belum Dibayar</p>
-                <p className="text-2xl font-bold">
-                  {isLoading ? "..." : invoices.filter((i: any) => i.status === "SENT" || i.status === "DRAFT").length}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Pending Payment</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {formatCurrency(pendingPayments)}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">Total Pendapatan</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {formatCurrency(totalRevenue)}
-                </p>
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <PremiumStatCard
+              title="Total Invoice"
+              value={isLoading ? "..." : invoices.length}
+              icon={FileText}
+              colorTheme="blue"
+            />
+            <PremiumStatCard
+              title="Belum Dibayar"
+              value={isLoading ? "..." : invoices.filter((i: any) => i.status === "SENT" || i.status === "DRAFT").length}
+              icon={FileText}
+              colorTheme="amber"
+            />
+            <PremiumStatCard
+              title="Pending Payment"
+              value={formatCurrency(pendingPayments)}
+              icon={FileText}
+              colorTheme="red"
+            />
+            <PremiumStatCard
+              title="Total Pendapatan"
+              value={formatCurrency(totalRevenue)}
+              icon={FileText}
+              colorTheme="emerald"
+            />
           </div>
 
           {/* Invoice Table */}
